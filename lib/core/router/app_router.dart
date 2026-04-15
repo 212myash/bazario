@@ -15,6 +15,7 @@ import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/onboarding/presentation/screens/startup_gate_screen.dart';
 import '../../features/wishlist/presentation/screens/wishlist_screen.dart';
+import '../../shared/widgets/custom_bottom_nav_bar.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
@@ -94,27 +95,23 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/orders',
-                builder: (context, state) => const OrdersScreen(),
-                routes: [
-                  GoRoute(
-                    path: 'details/:orderId',
-                    builder: (context, state) {
-                      final orderId = state.pathParameters['orderId'] ?? '';
-                      return OrderDetailsScreen(orderId: orderId);
-                    },
-                  ),
-                ],
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
                 path: '/profile',
                 builder: (context, state) => const ProfileScreen(),
               ),
             ],
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/orders',
+        builder: (context, state) => const OrdersScreen(),
+        routes: [
+          GoRoute(
+            path: 'details/:orderId',
+            builder: (context, state) {
+              final orderId = state.pathParameters['orderId'] ?? '';
+              return OrderDetailsScreen(orderId: orderId);
+            },
           ),
         ],
       ),
@@ -131,7 +128,7 @@ class _BaseShell extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: navigationShell,
-      bottomNavigationBar: NavigationBar(
+      bottomNavigationBar: CustomBottomNavBar(
         selectedIndex: navigationShell.currentIndex,
         onDestinationSelected: (index) {
           navigationShell.goBranch(
@@ -139,28 +136,6 @@ class _BaseShell extends StatelessWidget {
             initialLocation: index == navigationShell.currentIndex,
           );
         },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.storefront_outlined),
-            label: 'Home',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.favorite_outline),
-            label: 'Wishlist',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.shopping_cart_outlined),
-            label: 'Cart',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.receipt_long_outlined),
-            label: 'Orders',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            label: 'Profile',
-          ),
-        ],
       ),
     );
   }

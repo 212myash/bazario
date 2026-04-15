@@ -38,7 +38,7 @@ void main() {
 
     expect(await tokenStorage.getAccessToken(), 'token_123');
     expect(container.read(authProvider).isLoggedIn, isTrue);
-    expect(find.text('Search products...'), findsOneWidget);
+    expect(find.text('Search'), findsOneWidget);
     expect(find.text('Home'), findsOneWidget);
   });
 
@@ -63,7 +63,7 @@ void main() {
 
     expect(container.read(authProvider).isLoggedIn, isFalse);
     expect(find.text('Welcome back'), findsOneWidget);
-    expect(find.text('Search products...'), findsNothing);
+    expect(find.text('Search'), findsNothing);
   });
 
   testWidgets('Checkout flow: success callback creates order and navigates', (
@@ -149,7 +149,9 @@ void main() {
     await tester.tap(find.text('Login'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Orders'));
+    await tester.tap(find.text('Profile'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('My Orders'));
     await tester.pumpAndSettle();
 
     expect(find.textContaining('ORDER_1'), findsOneWidget);
@@ -216,7 +218,10 @@ ProviderContainer _createContainer({
 }
 
 Future<void> _pumpApp(WidgetTester tester, ProviderContainer container) async {
-  SharedPreferences.setMockInitialValues({'isFirstTime': false});
+  SharedPreferences.setMockInitialValues({
+    'isFirstTime': false,
+    'skipSplashDelay': true,
+  });
   await tester.pumpWidget(
     UncontrolledProviderScope(container: container, child: const BazarioApp()),
   );

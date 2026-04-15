@@ -6,6 +6,7 @@ import '../../../../shared/widgets/empty_state_view.dart';
 import '../../../../shared/widgets/error_state_view.dart';
 import '../../../../shared/widgets/loading_skeleton.dart';
 import '../../../../shared/widgets/product_card.dart';
+import '../../../../shared/widgets/section_title.dart';
 import '../../../cart/presentation/providers/cart_provider.dart';
 import '../providers/wishlist_provider.dart';
 
@@ -62,43 +63,72 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
             );
           }
 
-          return GridView.builder(
-            padding: const EdgeInsets.all(16),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 0.66,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-            ),
-            itemBuilder: (context, index) {
-              final item = state.items[index];
-              return Stack(
-                children: [
-                  Positioned.fill(
-                    child: ProductCard(
-                      product: item,
-                      onTap: () => context.push('/home/product/${item.slug}'),
-                      onAddToCart: () {
-                        ref.read(cartProvider.notifier).addItem(item.id);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Moved to cart')),
-                        );
-                      },
-                    ),
+          return CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                sliver: SliverToBoxAdapter(
+                  child: SectionTitle(
+                    title: 'Saved for later',
+                    subtitle: '${state.items.length} items in wishlist',
                   ),
-                  Positioned(
-                    right: 8,
-                    top: 8,
-                    child: IconButton.filledTonal(
-                      onPressed: () =>
-                          ref.read(wishlistProvider.notifier).remove(item.id),
-                      icon: const Icon(Icons.close),
-                    ),
+                ),
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
+                sliver: SliverGrid.builder(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 0.66,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
                   ),
-                ],
-              );
-            },
-            itemCount: state.items.length,
+                  itemBuilder: (context, index) {
+                    final item = state.items[index];
+                    return Stack(
+                      children: [
+                        Positioned.fill(
+                          child: ProductCard(
+                            product: item,
+                            onTap: () => context.push('/home/product/${item.slug}'),
+                            onAddToCart: () {
+                              ref.read(cartProvider.notifier).addItem(item.id);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Moved to cart')),
+                              );
+                            },
+                          ),
+                        ),
+                        Positioned(
+                          right: 8,
+                          top: 8,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(10),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color(0x18000000),
+                                  blurRadius: 10,
+                                  offset: Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: IconButton(
+                              onPressed: () =>
+                                  ref.read(wishlistProvider.notifier).remove(item.id),
+                              icon: const Icon(Icons.close, size: 18),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                  itemCount: state.items.length,
+                ),
+              ),
+            ],
           );
         },
       ),
