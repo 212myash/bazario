@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../../shared/widgets/brand_logo.dart';
 import '../providers/profile_provider.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -26,7 +27,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Profile')),
+      appBar: AppBar(
+        titleSpacing: 16,
+        title: const Row(
+          children: [
+            BrandLogo(width: 98, showWordmark: false),
+            SizedBox(width: 10),
+            Text('Profile'),
+          ],
+        ),
+      ),
       body: user == null && state.isLoading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
@@ -42,10 +52,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           children: [
                             const CircleAvatar(
                               radius: 24,
-                              backgroundColor: Color(0xFFFFE4CC),
+                              backgroundColor: Colors.transparent,
                               child: Icon(
                                 Icons.person_rounded,
-                                color: Color(0xFFFF6A00),
+                                color: Color(0xFF172E73),
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -309,6 +319,8 @@ class _ProfileActionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return ListTile(
       contentPadding: EdgeInsets.zero,
       onTap: onTap,
@@ -316,10 +328,10 @@ class _ProfileActionTile extends StatelessWidget {
         height: 42,
         width: 42,
         decoration: BoxDecoration(
-          color: const Color(0xFFFFE4CC),
+          color: colorScheme.secondaryContainer,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Icon(icon, color: const Color(0xFFFF6A00)),
+        child: Icon(icon, color: colorScheme.onSecondaryContainer),
       ),
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
       subtitle: Text(subtitle),

@@ -14,9 +14,12 @@ class BrandLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final logoPath = showWordmark
-        ? 'assets/images/bazario_logo.png'
-        : 'assets/images/bazario_logo_icon.png';
+      ? (isDark ? 'assets/images/DarkLogo.png' : 'assets/images/LightLogo.png')
+      : (isDark
+          ? 'assets/images/Darckicon.png'
+          : 'assets/images/Lighticon.png');
 
     return Image.asset(
       logoPath,
@@ -37,6 +40,7 @@ class _FallbackBrand extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final iconSize = showWordmark ? width * 0.22 : width * 0.72;
 
     return SizedBox(
@@ -47,7 +51,7 @@ class _FallbackBrand extends StatelessWidget {
           Icon(
             Icons.shopping_cart_checkout_rounded,
             size: iconSize,
-            color: const Color(0xFF7A5AF8),
+            color: colorScheme.secondary,
           ),
           if (showWordmark) ...[
             const SizedBox(width: 8),

@@ -96,7 +96,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     sliver: SliverToBoxAdapter(
                       child: _TopHeader(
                         onNotificationTap: () {},
-                        onCartTap: () {},
                       ),
                     ),
                   ),
@@ -259,11 +258,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 class _TopHeader extends StatelessWidget {
   const _TopHeader({
     required this.onNotificationTap,
-    required this.onCartTap,
   });
 
   final VoidCallback onNotificationTap;
-  final VoidCallback onCartTap;
 
   @override
   Widget build(BuildContext context) {
@@ -273,8 +270,8 @@ class _TopHeader extends StatelessWidget {
       children: [
         const CircleAvatar(
           radius: 22,
-          backgroundColor: Color(0xFFFFE0CC),
-          child: Icon(Icons.person, color: Color(0xFFFF6A00)),
+          backgroundColor: Color(0xFFDDE5FF),
+          child: Icon(Icons.person, color: Color(0xFF172E73)),
         ),
         const SizedBox(width: 10),
         Expanded(
@@ -310,6 +307,8 @@ class _IconCircleButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return InkWell(
       borderRadius: BorderRadius.circular(12),
       onTap: onTap,
@@ -317,7 +316,7 @@ class _IconCircleButton extends StatelessWidget {
         height: 42,
         width: 42,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
           boxShadow: const [
             BoxShadow(

@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../../shared/widgets/app_button.dart';
+import '../../../../shared/widgets/brand_logo.dart';
 import '../../../../shared/widgets/empty_state_view.dart';
 import '../../../../shared/widgets/error_state_view.dart';
 import '../../../../shared/widgets/loading_skeleton.dart';
@@ -29,9 +30,19 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(cartProvider);
     final currency = NumberFormat.currency(symbol: '₹');
+    final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('My Cart')),
+      appBar: AppBar(
+        titleSpacing: 16,
+        title: const Row(
+          children: [
+            BrandLogo(width: 108, showWordmark: false),
+            SizedBox(width: 10),
+            Text('My Cart'),
+          ],
+        ),
+      ),
       body: Builder(
         builder: (context) {
           if (state.isLoading && state.cart == null) {
@@ -118,7 +129,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                         .textTheme
                                         .titleMedium
                                         ?.copyWith(
-                                          color: const Color(0xFFFF6A00),
+                                          color: theme.colorScheme.tertiary,
                                           fontWeight: FontWeight.w700,
                                         ),
                                   ),
@@ -190,7 +201,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                           style: Theme.of(context).textTheme.titleMedium
                               ?.copyWith(
                                 fontWeight: FontWeight.w700,
-                                color: const Color(0xFFFF6A00),
+                                color: theme.colorScheme.tertiary,
                               ),
                         ),
                       ],
