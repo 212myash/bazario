@@ -18,7 +18,7 @@ class OrderItemModel {
   factory OrderItemModel.fromJson(Map<String, dynamic> json) {
     return OrderItemModel(
       productId: json['product']?.toString() ?? '',
-      title: json['title']?.toString() ?? 'Untitled',
+      title: json['title']?.toString() ?? 'Product',
       image: json['image']?.toString(),
       quantity: (json['quantity'] as num?)?.toInt() ?? 1,
       unitPrice: (json['unitPrice'] as num?)?.toDouble() ?? 0,

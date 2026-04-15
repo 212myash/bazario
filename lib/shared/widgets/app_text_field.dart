@@ -1,31 +1,12 @@
-import 'package:flutter/material.dart';
+import 'custom_text_field.dart';
 
-class AppTextField extends StatelessWidget {
+class AppTextField extends CustomTextField {
   const AppTextField({
     super.key,
-    required this.controller,
-    required this.hintText,
-    this.keyboardType,
-    this.obscureText = false,
-    this.prefixIcon,
+    required super.controller,
+    required super.hintText,
+    super.keyboardType,
+    super.obscureText,
+    super.prefixIcon,
   });
-
-  final TextEditingController controller;
-  final String hintText;
-  final TextInputType? keyboardType;
-  final bool obscureText;
-  final IconData? prefixIcon;
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      keyboardType: keyboardType,
-      obscureText: obscureText,
-      decoration: InputDecoration(
-        hintText: hintText,
-        prefixIcon: prefixIcon == null ? null : Icon(prefixIcon),
-      ),
-    );
-  }
 }

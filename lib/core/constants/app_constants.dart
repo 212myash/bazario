@@ -1,10 +1,10 @@
 class AppConstants {
   static const String appName = 'Bazario';
 
-  // Use your deployed backend URL for release builds.
+  // Use the deployed backend by default; override with --dart-define when needed.
   static const String baseUrl = String.fromEnvironment(
     'BAZARIO_BASE_URL',
-    defaultValue: 'http://10.0.2.2:5000',
+    defaultValue: 'https://bazario-5ahc.onrender.com',
   );
 
   static const Duration connectTimeout = Duration(seconds: 20);

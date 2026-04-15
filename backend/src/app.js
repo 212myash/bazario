@@ -13,18 +13,6 @@ const { notFound, errorHandler } = require("./middleware/error.middleware");
 
 const app = express();
 
-app.get("/", (_req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "Bazario API is running",
-    docs: {
-      health: "/api/health",
-      products: "/api/products",
-      authLogin: "/api/auth/login",
-    },
-  });
-});
-
 app.use(
   cors({
     origin: env.CLIENT_URL === "*" ? true : env.CLIENT_URL,

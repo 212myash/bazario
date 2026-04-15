@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:bazario/core/network/api_client.dart';
 import 'package:bazario/core/network/session_events.dart';
@@ -32,7 +32,7 @@ void main() {
 
     await _pumpApp(tester, container);
 
-    expect(find.text('Welcome to Bazario'), findsOneWidget);
+    expect(find.text('Welcome back'), findsOneWidget);
     await tester.tap(find.text('Login'));
     await tester.pumpAndSettle();
 
@@ -62,7 +62,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(container.read(authProvider).isLoggedIn, isFalse);
-    expect(find.text('Welcome to Bazario'), findsOneWidget);
+    expect(find.text('Welcome back'), findsOneWidget);
     expect(find.text('Search products...'), findsNothing);
   });
 
@@ -216,6 +216,7 @@ ProviderContainer _createContainer({
 }
 
 Future<void> _pumpApp(WidgetTester tester, ProviderContainer container) async {
+  SharedPreferences.setMockInitialValues({'isFirstTime': false});
   await tester.pumpWidget(
     UncontrolledProviderScope(container: container, child: const BazarioApp()),
   );

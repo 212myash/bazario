@@ -12,15 +12,19 @@ import '../../features/order/presentation/screens/orders_screen.dart';
 import '../../features/product/presentation/screens/home_screen.dart';
 import '../../features/product/presentation/screens/product_details_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
+import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
+import '../../features/onboarding/presentation/screens/startup_gate_screen.dart';
 import '../../features/wishlist/presentation/screens/wishlist_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
 
   return GoRouter(
-    initialLocation: '/home',
+    initialLocation: '/startup',
     redirect: (context, state) {
       final isAuthRoute =
+          state.matchedLocation == '/startup' ||
+          state.matchedLocation == '/onboarding' ||
           state.matchedLocation == '/login' ||
           state.matchedLocation == '/register';
       if (!authState.isLoggedIn && !isAuthRoute) {
@@ -32,6 +36,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
+      GoRoute(
+        path: '/startup',
+        builder: (context, state) => const StartupGateScreen(),
+      ),
+      GoRoute(
+        path: '/onboarding',
+        builder: (context, state) => const OnboardingScreen(),
+      ),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(
         path: '/register',

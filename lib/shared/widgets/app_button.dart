@@ -1,32 +1,10 @@
-import 'package:flutter/material.dart';
+import 'custom_button.dart';
 
-class AppButton extends StatelessWidget {
+class AppButton extends CustomButton {
   const AppButton({
     super.key,
-    required this.label,
-    required this.onPressed,
-    this.isLoading = false,
+    required super.label,
+    required super.onPressed,
+    super.isLoading,
   });
-
-  final String label;
-  final VoidCallback? onPressed;
-  final bool isLoading;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 52,
-      width: double.infinity,
-      child: FilledButton(
-        onPressed: isLoading ? null : onPressed,
-        child: isLoading
-            ? const SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            : Text(label),
-      ),
-    );
-  }
 }
