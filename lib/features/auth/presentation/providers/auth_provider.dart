@@ -54,8 +54,28 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> tryAutoLogin() async {
     final token = await _tokenStorage.getAccessToken();
-    if (token != null && token.isNotEmpty) {
-      state = state.copyWith(isLoggedIn: true);
+    if (token == null || token.isEmpty) {
+      return;
+    }
+
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      final response = await _api.getMyProfile();
+      final user = UserModel.fromJson(
+        (response['data'] ?? {}) as Map<String, dynamic>,
+      );
+      state = state.copyWith(
+        isLoading: false,
+        isLoggedIn: true,
+        user: user,
+        clearError: true,
+      );
+    } on DioException {
+      await _tokenStorage.clear();
+      state = const AuthState(isLoggedIn: false, isLoading: false);
+    } catch (_) {
+      await _tokenStorage.clear();
+      state = const AuthState(isLoggedIn: false, isLoading: false);
     }
   }
 

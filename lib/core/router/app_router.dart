@@ -6,6 +6,7 @@ import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/cart/presentation/screens/cart_screen.dart';
+import '../../features/admin/presentation/screens/admin_screen.dart';
 import '../../features/order/presentation/screens/checkout_screen.dart';
 import '../../features/order/presentation/screens/order_details_screen.dart';
 import '../../features/order/presentation/screens/orders_screen.dart';
@@ -23,17 +24,25 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/startup',
     redirect: (context, state) {
+      final isAdmin = (authState.user?.role.toLowerCase() ?? '') == 'admin';
       final isAuthRoute =
           state.matchedLocation == '/startup' ||
           state.matchedLocation == '/onboarding' ||
           state.matchedLocation == '/login' ||
           state.matchedLocation == '/register';
+
       if (!authState.isLoggedIn && !isAuthRoute) {
         return '/login';
       }
+
       if (authState.isLoggedIn && isAuthRoute) {
+        return isAdmin ? '/admin' : '/home';
+      }
+
+      if (authState.isLoggedIn && state.matchedLocation.startsWith('/admin') && !isAdmin) {
         return '/home';
       }
+
       return null;
     },
     routes: [
@@ -54,6 +63,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/checkout',
         builder: (context, state) => const CheckoutScreen(),
       ),
+      GoRoute(path: '/admin', builder: (context, state) => const AdminScreen()),
       StatefulShellRoute.indexedStack(
         builder: (context, state, shell) {
           return _BaseShell(navigationShell: shell);

@@ -47,7 +47,9 @@ class _StartupGateScreenState extends ConsumerState<StartupGateScreen>
     final prefs = await SharedPreferences.getInstance();
     final skipSplashDelay = prefs.getBool('skipSplashDelay') ?? false;
     final isFirstTime = prefs.getBool('isFirstTime') ?? true;
-    final isLoggedIn = ref.read(authProvider).isLoggedIn;
+    final authState = ref.read(authProvider);
+    final isLoggedIn = authState.isLoggedIn;
+    final isAdmin = (authState.user?.role.toLowerCase() ?? '') == 'admin';
 
     if (!skipSplashDelay) {
       await Future<void>.delayed(_splashDelay);
@@ -60,7 +62,7 @@ class _StartupGateScreenState extends ConsumerState<StartupGateScreen>
     if (isFirstTime) {
       context.go('/onboarding');
     } else {
-      context.go(isLoggedIn ? '/home' : '/login');
+      context.go(isLoggedIn ? (isAdmin ? '/admin' : '/home') : '/login');
     }
   }
 
@@ -108,7 +110,7 @@ class _StartupGateScreenState extends ConsumerState<StartupGateScreen>
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Image.asset(
-                        'assets/images/bazario_logo.png',
+                        'assets/images/DarkLogo.png',
                         width: 260,
                         fit: BoxFit.contain,
                         errorBuilder: (context, error, stackTrace) {

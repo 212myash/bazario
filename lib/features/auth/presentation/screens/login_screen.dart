@@ -32,7 +32,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     ref.listen(authProvider, (previous, next) {
       if (next.isLoggedIn) {
-        context.go('/home');
+        final isAdmin = (next.user?.role.toLowerCase() ?? '') == 'admin';
+        context.go(isAdmin ? '/admin' : '/home');
       }
     });
 

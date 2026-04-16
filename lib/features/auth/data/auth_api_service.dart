@@ -30,6 +30,11 @@ class AuthApiService {
     return response.data as Map<String, dynamic>;
   }
 
+  Future<Map<String, dynamic>> getMyProfile() async {
+    final response = await _dio.get('/api/users/me');
+    return response.data as Map<String, dynamic>;
+  }
+
   Future<void> logout() async {
     await _dio.post('/api/auth/logout');
   }
