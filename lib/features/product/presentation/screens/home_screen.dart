@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/theme/brand_colors.dart';
 import '../../../../shared/widgets/category_chip.dart';
 import '../../../../shared/widgets/brand_logo.dart';
 import '../../../../shared/widgets/custom_search_bar.dart';
@@ -11,6 +12,7 @@ import '../../../../shared/widgets/error_state_view.dart';
 import '../../../../shared/widgets/loading_skeleton.dart';
 import '../../../../shared/widgets/product_card.dart';
 import '../../../../shared/widgets/section_title.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../cart/presentation/providers/cart_provider.dart';
 import '../providers/product_provider.dart';
 
@@ -57,6 +59,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(productProvider);
+    final authState = ref.watch(authProvider);
+    final rawName = authState.user?.name.trim() ?? '';
+    final userName = rawName.isEmpty ? 'there' : rawName;
     final chips = _buildCategories(state);
 
     return Scaffold(
@@ -80,13 +85,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             if (state.errorMessage != null && state.products.isEmpty) {
               return ErrorStateView(
                 message: state.errorMessage!,
-                onRetry: () => ref.read(productProvider.notifier).fetchProducts(),
+                onRetry: () =>
+                    ref.read(productProvider.notifier).fetchProducts(),
               );
             }
 
             return RefreshIndicator(
-              onRefresh: () =>
-                  ref.read(productProvider.notifier).fetchProducts(refresh: true),
+              onRefresh: () => ref
+                  .read(productProvider.notifier)
+                  .fetchProducts(refresh: true),
               child: CustomScrollView(
                 controller: _scrollController,
                 physics: const BouncingScrollPhysics(),
@@ -95,6 +102,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
                     sliver: SliverToBoxAdapter(
                       child: _TopHeader(
+                        userName: userName,
+                        greetingText: _greetingByTime(),
                         onNotificationTap: () {},
                       ),
                     ),
@@ -107,11 +116,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         hintText: 'Search',
                         onChanged: (value) {
                           _debounce?.cancel();
-                          _debounce = Timer(const Duration(milliseconds: 450), () {
-                            ref
-                                .read(productProvider.notifier)
-                                .updateSearch(value.trim());
-                          });
+                          _debounce = Timer(
+                            const Duration(milliseconds: 450),
+                            () {
+                              ref
+                                  .read(productProvider.notifier)
+                                  .updateSearch(value.trim());
+                            },
+                          );
                         },
                         onFilterTap: () {},
                       ),
@@ -120,10 +132,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   SliverPadding(
                     padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
                     sliver: SliverToBoxAdapter(
-                      child: SectionTitle(
-                        title: 'Categories',
-                        onSeeAll: () {},
-                      ),
+                      child: SectionTitle(title: 'Categories', onSeeAll: () {}),
                     ),
                   ),
                   SliverPadding(
@@ -134,8 +143,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         child: ListView.separated(
                           scrollDirection: Axis.horizontal,
                           itemCount: chips.length,
-                            separatorBuilder: (context, index) =>
-                                const SizedBox(width: 10),
+                          separatorBuilder: (context, index) =>
+                              const SizedBox(width: 10),
                           itemBuilder: (context, index) {
                             final chip = chips[index];
                             return CategoryChip(
@@ -165,12 +174,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     SliverPadding(
                       padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
                       sliver: SliverGrid.builder(
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.66,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                        ),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              childAspectRatio: 0.66,
+                              crossAxisSpacing: 12,
+                              mainAxisSpacing: 12,
+                            ),
                         itemBuilder: (context, index) =>
                             const LoadingSkeleton(height: 220),
                         itemCount: 6,
@@ -185,12 +195,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     SliverPadding(
                       padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
                       sliver: SliverGrid.builder(
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.66,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                        ),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              childAspectRatio: 0.66,
+                              crossAxisSpacing: 12,
+                              mainAxisSpacing: 12,
+                            ),
                         itemBuilder: (context, index) {
                           if (index >= state.products.length) {
                             return const LoadingSkeleton(height: 220);
@@ -198,13 +209,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           final product = state.products[index];
                           return ProductCard(
                             product: product,
-                            onTap: () => context.push('/home/product/${product.slug}'),
+                            onTap: () =>
+                                context.push('/home/product/${product.slug}'),
                             onAddToCart: () {
-                              ref.read(cartProvider.notifier).addItem(product.id);
+                              ref
+                                  .read(cartProvider.notifier)
+                                  .addItem(product.id);
                             },
                           );
                         },
-                        itemCount: state.products.length + (state.isLoadingMore ? 2 : 0),
+                        itemCount:
+                            state.products.length +
+                            (state.isLoadingMore ? 2 : 0),
                       ),
                     ),
                 ],
@@ -253,13 +269,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
     ];
   }
+
+  String _greetingByTime() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) {
+      return 'Good Morning';
+    }
+    if (hour < 17) {
+      return 'Good Afternoon';
+    }
+    if (hour < 21) {
+      return 'Good Evening';
+    }
+    return 'Good Night';
+  }
 }
 
 class _TopHeader extends StatelessWidget {
   const _TopHeader({
+    required this.userName,
+    required this.greetingText,
     required this.onNotificationTap,
   });
 
+  final String userName;
+  final String greetingText;
   final VoidCallback onNotificationTap;
 
   @override
@@ -271,7 +305,7 @@ class _TopHeader extends StatelessWidget {
         const CircleAvatar(
           radius: 22,
           backgroundColor: Color(0xFFDDE5FF),
-          child: Icon(Icons.person, color: Color(0xFF172E73)),
+          child: Icon(Icons.person, color: BrandColors.logoNavy),
         ),
         const SizedBox(width: 10),
         Expanded(
@@ -279,13 +313,17 @@ class _TopHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Hello, Alex',
+                'Hello, $userName',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
               ),
               Text(
-                'Good Morning',
+                greetingText,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -293,7 +331,10 @@ class _TopHeader extends StatelessWidget {
             ],
           ),
         ),
-        _IconCircleButton(icon: Icons.notifications_none_rounded, onTap: onNotificationTap),
+        _IconCircleButton(
+          icon: Icons.notifications_none_rounded,
+          onTap: onNotificationTap,
+        ),
       ],
     );
   }
@@ -338,17 +379,17 @@ class _PromoBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 130,
+      height: 142,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF172E73), Color(0xFF7A5AF8)],
+          colors: [BrandColors.logoNavy, BrandColors.logoViolet],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(18),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x33172E73),
+            color: Color(0x330C1B4D),
             blurRadius: 22,
             offset: Offset(0, 10),
           ),
@@ -376,10 +417,11 @@ class _PromoBanner extends StatelessWidget {
                   FilledButton.tonal(
                     onPressed: () {},
                     style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFFFFA45E),
-                      foregroundColor: const Color(0xFF251200),
+                      backgroundColor: BrandColors.logoGold,
+                      foregroundColor: const Color(0xFF2D1600),
                       padding: const EdgeInsets.symmetric(horizontal: 14),
-                      minimumSize: const Size(0, 38),
+                      minimumSize: const Size(0, 34),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
                     child: const Text('Shop Now'),
                   ),

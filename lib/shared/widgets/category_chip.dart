@@ -14,6 +14,7 @@ class CategoryChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final foreground = selected
         ? Colors.white
         : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8);
@@ -26,17 +27,15 @@ class CategoryChip extends StatelessWidget {
         curve: Curves.easeOut,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: selected ? const Color(0xFFFF6A00) : Colors.white,
+          color: selected ? colorScheme.secondary : colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: selected
-                ? const Color(0xFFFF6A00)
-                : const Color(0xFFE7EAF0),
+            color: selected ? colorScheme.secondary : const Color(0xFFE7EAF0),
           ),
           boxShadow: selected
-              ? const [
+              ? [
                   BoxShadow(
-                    color: Color(0x40FF6A00),
+                    color: colorScheme.secondary.withValues(alpha: 0.28),
                     blurRadius: 14,
                     offset: Offset(0, 6),
                   ),
@@ -45,10 +44,7 @@ class CategoryChip extends StatelessWidget {
         ),
         child: Text(
           label,
-          style: TextStyle(
-            color: foreground,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(color: foreground, fontWeight: FontWeight.w600),
         ),
       ),
     );

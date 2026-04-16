@@ -40,7 +40,9 @@ class ProductCard extends StatelessWidget {
                     child: AspectRatio(
                       aspectRatio: 1,
                       child: CachedNetworkImage(
-                        imageUrl: product.images.isEmpty ? '' : product.images.first,
+                        imageUrl: product.images.isEmpty
+                            ? ''
+                            : product.images.first,
                         fit: BoxFit.cover,
                         width: double.infinity,
                         errorWidget: (context, url, error) => Container(
@@ -141,6 +143,8 @@ class _AddToCartButtonState extends State<_AddToCartButton> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return AnimatedScale(
       scale: _scale,
       duration: const Duration(milliseconds: 140),
@@ -152,14 +156,10 @@ class _AddToCartButtonState extends State<_AddToCartButton> {
           height: 32,
           width: 32,
           decoration: BoxDecoration(
-            color: const Color(0xFFFF6A00),
+            color: colorScheme.secondary,
             borderRadius: BorderRadius.circular(10),
           ),
-          child: const Icon(
-            Icons.add_rounded,
-            color: Colors.white,
-            size: 20,
-          ),
+          child: const Icon(Icons.add_rounded, color: Colors.white, size: 20),
         ),
       ),
     );

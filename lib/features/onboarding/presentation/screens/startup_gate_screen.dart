@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../core/theme/brand_colors.dart';
 import '../../../../features/auth/presentation/providers/auth_provider.dart';
 
 class StartupGateScreen extends ConsumerStatefulWidget {
@@ -33,10 +34,7 @@ class _StartupGateScreenState extends ConsumerState<StartupGateScreen>
       curve: Curves.easeOutCubic,
     );
     _scaleAnimation = Tween<double>(begin: 0.94, end: 1).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeOutBack,
-      ),
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOutBack),
     );
 
     _animationController.forward();
@@ -90,7 +88,7 @@ class _StartupGateScreenState extends ConsumerState<StartupGateScreen>
               right: -50,
               child: _GlowCircle(
                 size: 220,
-                color: const Color(0xFF9A63FF).withValues(alpha: 0.2),
+                color: BrandColors.logoPurple.withValues(alpha: 0.2),
               ),
             ),
             Positioned(
@@ -98,7 +96,7 @@ class _StartupGateScreenState extends ConsumerState<StartupGateScreen>
               left: -40,
               child: _GlowCircle(
                 size: 210,
-                color: const Color(0xFFFF8A3D).withValues(alpha: 0.2),
+                color: BrandColors.logoGold.withValues(alpha: 0.2),
               ),
             ),
             Center(
@@ -132,7 +130,7 @@ class _StartupGateScreenState extends ConsumerState<StartupGateScreen>
                         height: 22,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Color(0xFFFF8A3D),
+                          color: BrandColors.logoGold,
                         ),
                       ),
                     ],
@@ -174,7 +172,7 @@ class _FallbackLogo extends StatelessWidget {
         Icon(
           Icons.shopping_cart_checkout_rounded,
           size: 46,
-          color: Color(0xFF9A63FF),
+          color: BrandColors.logoPurple,
         ),
         SizedBox(width: 10),
         Text(

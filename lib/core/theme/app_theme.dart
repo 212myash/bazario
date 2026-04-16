@@ -1,35 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'brand_colors.dart';
+
 class AppTheme {
   static ThemeData lightTheme() {
-    const primary = Color(0xFF1F3F9A);
-    const secondary = Color(0xFF7A5AF8);
-    const tertiary = Color(0xFFFF8A3D);
+    const primary = BrandColors.logoNavy;
+    const secondary = BrandColors.logoViolet;
+    const tertiary = BrandColors.logoGold;
     const surface = Colors.white;
-    const background = Color(0xFFF8F9FD);
+    const background = BrandColors.lightBg;
 
     const colorScheme = ColorScheme(
       brightness: Brightness.light,
       primary: primary,
       onPrimary: Colors.white,
-      primaryContainer: Color(0xFFFFE4CC),
-      onPrimaryContainer: Color(0xFF3B1E00),
+      primaryContainer: Color(0xFFDCE3FF),
+      onPrimaryContainer: Color(0xFF0F1D4D),
       secondary: secondary,
       onSecondary: Colors.white,
-      secondaryContainer: Color(0xFFEDE9FF),
-      onSecondaryContainer: Color(0xFF1E1748),
+      secondaryContainer: Color(0xFFEAE4FF),
+      onSecondaryContainer: Color(0xFF2A1F66),
       tertiary: tertiary,
-      onTertiary: Colors.white,
-      tertiaryContainer: Color(0xFFFFE8D6),
-      onTertiaryContainer: Color(0xFF462100),
+      onTertiary: Color(0xFF2D1600),
+      tertiaryContainer: Color(0xFFFFE4C5),
+      onTertiaryContainer: Color(0xFF4A2800),
       error: Color(0xFFBA1A1A),
       onError: Colors.white,
       errorContainer: Color(0xFFFFDAD6),
       onErrorContainer: Color(0xFF410002),
       surface: surface,
-      onSurface: Color(0xFF111111),
-      surfaceContainerHighest: Color(0xFFF0F2F7),
+      onSurface: BrandColors.logoNavy,
+      surfaceContainerHighest: Color(0xFFEEF1FB),
       onSurfaceVariant: Color(0xFF6B7280),
       outline: Color(0xFFD6DAE3),
       outlineVariant: Color(0xFFE5E7EE),
@@ -77,7 +79,7 @@ class AppTheme {
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          backgroundColor: tertiary,
+          backgroundColor: secondary,
           foregroundColor: Colors.white,
           minimumSize: const Size(0, 52),
           shape: RoundedRectangleBorder(
@@ -101,31 +103,31 @@ class AppTheme {
   }
 
   static ThemeData darkTheme() {
-    const primary = Color(0xFF8AA3FF);
-    const secondary = Color(0xFFA98DFF);
-    const tertiary = Color(0xFFFFA45E);
+    const primary = Color(0xFF9AB0FF);
+    const secondary = Color(0xFFC0B0FF);
+    const tertiary = Color(0xFFF0BD7C);
 
     const colorScheme = ColorScheme(
       brightness: Brightness.dark,
       primary: primary,
-      onPrimary: Color(0xFF3A1B00),
-      primaryContainer: Color(0xFF7D3900),
-      onPrimaryContainer: Color(0xFFFFDCC3),
+      onPrimary: Color(0xFF0E1B4A),
+      primaryContainer: Color(0xFF243E92),
+      onPrimaryContainer: Color(0xFFDDE5FF),
       secondary: secondary,
-      onSecondary: Color(0xFF220E4A),
-      secondaryContainer: Color(0xFF332168),
-      onSecondaryContainer: Color(0xFFF0E9FF),
+      onSecondary: Color(0xFF261B63),
+      secondaryContainer: Color(0xFF3B2B86),
+      onSecondaryContainer: Color(0xFFEAE4FF),
       tertiary: tertiary,
-      onTertiary: Color(0xFF4A2500),
-      tertiaryContainer: Color(0xFF663400),
-      onTertiaryContainer: Color(0xFFFFDDC2),
+      onTertiary: Color(0xFF1A2B6B),
+      tertiaryContainer: Color(0xFF5C390B),
+      onTertiaryContainer: Color(0xFFFFE3C4),
       error: Color(0xFFFFB4AB),
       onError: Color(0xFF690005),
       errorContainer: Color(0xFF93000A),
       onErrorContainer: Color(0xFFFFDAD6),
-      surface: Color(0xFF0F1116),
+      surface: Color(0xFF0E142E),
       onSurface: Color(0xFFE7E9EF),
-      surfaceContainerHighest: Color(0xFF1A1D25),
+      surfaceContainerHighest: Color(0xFF161F42),
       onSurfaceVariant: Color(0xFFAAB1C0),
       outline: Color(0xFF8A93A6),
       outlineVariant: Color(0xFF2A2F3B),
@@ -140,7 +142,7 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
-      scaffoldBackgroundColor: const Color(0xFF0B0D12),
+      scaffoldBackgroundColor: BrandColors.darkBg,
       textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme),
       appBarTheme: AppBarTheme(
         centerTitle: false,
@@ -173,8 +175,8 @@ class AppTheme {
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          backgroundColor: tertiary,
-          foregroundColor: const Color(0xFF2A1500),
+          backgroundColor: secondary,
+          foregroundColor: Colors.white,
           minimumSize: const Size(0, 52),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -184,7 +186,7 @@ class AppTheme {
       ),
       navigationBarTheme: NavigationBarThemeData(
         indicatorColor: colorScheme.primaryContainer,
-        backgroundColor: const Color(0xFF111827),
+        backgroundColor: const Color(0xFF0F1838),
         labelTextStyle: WidgetStatePropertyAll(
           GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600),
         ),

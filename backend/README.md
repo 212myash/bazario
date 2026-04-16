@@ -107,6 +107,16 @@ GET http://localhost:5000/api/health
 npm run seed:admin -- admin@bazario.com Admin@12345
 ```
 
+### Step 5: Import bulk catalog from JSON
+
+1) Create your file at `backend/data/catalog.json` (see `backend/data/catalog.sample.json`).
+
+2) Run:
+
+```bash
+npm run import:catalog -- data/catalog.json
+```
+
 ## 3) Core Features Implemented
 
 - JWT Register/Login/Refresh/Logout

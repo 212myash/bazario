@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/theme/brand_colors.dart';
 import '../../../../shared/models/product_model.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../../../shared/widgets/error_state_view.dart';
@@ -30,10 +31,8 @@ class ProductDetailsScreen extends ConsumerWidget {
           message: 'Could not load product details',
           onRetry: () => ref.invalidate(productDetailsProvider(slug)),
         ),
-        data: (product) => _ProductDetailsContent(
-          product: product,
-          currency: currency,
-        ),
+        data: (product) =>
+            _ProductDetailsContent(product: product, currency: currency),
       ),
     );
   }
@@ -128,7 +127,7 @@ class _ProductDetailsContentState
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: selected
-                                ? const Color(0xFFFF6A00)
+                                ? BrandColors.logoViolet
                                 : theme.colorScheme.outlineVariant,
                             width: selected ? 2 : 1,
                           ),
@@ -140,7 +139,9 @@ class _ProductDetailsContentState
                             fit: BoxFit.cover,
                             errorWidget: (context, url, error) => Container(
                               color: theme.colorScheme.surfaceContainerHighest,
-                              child: const Icon(Icons.image_not_supported_outlined),
+                              child: const Icon(
+                                Icons.image_not_supported_outlined,
+                              ),
                             ),
                           ),
                         ),
@@ -163,7 +164,7 @@ class _ProductDetailsContentState
                     widget.currency.format(product.displayPrice),
                     style: theme.textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.w800,
-                      color: const Color(0xFFFF6A00),
+                      color: BrandColors.logoGold,
                     ),
                   ),
                   const Spacer(),
@@ -200,18 +201,21 @@ class _ProductDetailsContentState
                     label: Text(_sizes[index]),
                     selected: selected,
                     showCheckmark: false,
-                    onSelected: (_) => setState(() => _selectedSizeIndex = index),
-                    selectedColor: const Color(0xFFFF6A00),
+                    onSelected: (_) =>
+                        setState(() => _selectedSizeIndex = index),
+                    selectedColor: BrandColors.logoViolet,
                     backgroundColor: theme.colorScheme.surface,
                     labelStyle: TextStyle(
-                      color: selected ? Colors.white : theme.colorScheme.onSurface,
+                      color: selected
+                          ? Colors.white
+                          : theme.colorScheme.onSurface,
                       fontWeight: FontWeight.w600,
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                       side: BorderSide(
                         color: selected
-                            ? const Color(0xFFFF6A00)
+                            ? BrandColors.logoViolet
                             : theme.colorScheme.outlineVariant,
                       ),
                     ),
@@ -230,8 +234,10 @@ class _ProductDetailsContentState
               const SizedBox(height: 20),
               Card(
                 child: ListTile(
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 6,
+                  ),
                   leading: const Icon(Icons.local_shipping_outlined),
                   title: const Text('Free Delivery'),
                   subtitle: const Text('Delivery in 3-5 working days'),
@@ -258,7 +264,8 @@ class _ProductDetailsContentState
                 children: List.generate(
                   5,
                   (index) => IconButton(
-                    onPressed: () => setState(() => _selectedRating = index + 1),
+                    onPressed: () =>
+                        setState(() => _selectedRating = index + 1),
                     icon: Icon(
                       index < _selectedRating
                           ? Icons.star_rounded
@@ -281,7 +288,9 @@ class _ProductDetailsContentState
                 isLoading: _isSubmitting,
                 onPressed: () async {
                   setState(() => _isSubmitting = true);
-                  await ref.read(reviewProvider).submitReview(
+                  await ref
+                      .read(reviewProvider)
+                      .submitReview(
                         productId: product.id,
                         rating: _selectedRating,
                         comment: _commentController.text.trim(),
@@ -305,7 +314,9 @@ class _ProductDetailsContentState
               ),
               const SizedBox(height: 10),
               if (product.reviews.isEmpty)
-                const Text('No reviews yet. Be the first to review this product.')
+                const Text(
+                  'No reviews yet. Be the first to review this product.',
+                )
               else
                 ...product.reviews.map(
                   (review) => Card(
@@ -318,7 +329,9 @@ class _ProductDetailsContentState
                             children: [
                               Text(
                                 review.userName,
-                                style: const TextStyle(fontWeight: FontWeight.w700),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
                               const Spacer(),
                               Row(
@@ -387,7 +400,7 @@ class _ProductDetailsContentState
                       );
                     },
                     style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFFFF6A00),
+                      backgroundColor: BrandColors.logoViolet,
                     ),
                     child: const Text('Buy Now'),
                   ),

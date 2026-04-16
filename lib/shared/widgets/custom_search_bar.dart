@@ -20,7 +20,7 @@ class CustomSearchBar extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: const [
           BoxShadow(
@@ -51,7 +51,7 @@ class CustomSearchBar extends StatelessWidget {
           Container(
             margin: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: const Color(0xFFF4F5F8),
+              color: theme.colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(12),
             ),
             child: IconButton(

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../../core/theme/brand_colors.dart';
 import '../../../../shared/widgets/brand_logo.dart';
 import '../providers/profile_provider.dart';
 
@@ -55,7 +56,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               backgroundColor: Colors.transparent,
                               child: Icon(
                                 Icons.person_rounded,
-                                color: Color(0xFF172E73),
+                                color: BrandColors.logoNavy,
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -65,9 +66,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 children: [
                                   Text(
                                     user?.name ?? '-',
-                                    style: theme.textTheme.titleMedium?.copyWith(
-                                      fontWeight: FontWeight.w700,
-                                    ),
+                                    style: theme.textTheme.titleMedium
+                                        ?.copyWith(fontWeight: FontWeight.w700),
                                   ),
                                   Text(
                                     user?.email ?? '-',
@@ -156,7 +156,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  Future<void> _showEditProfileDialog(BuildContext context, dynamic user) async {
+  Future<void> _showEditProfileDialog(
+    BuildContext context,
+    dynamic user,
+  ) async {
     final nameController = TextEditingController(text: user?.name ?? '');
     final phoneController = TextEditingController(text: user?.phone ?? '');
 
@@ -186,7 +189,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
             FilledButton(
               onPressed: () async {
-                await ref.read(profileProvider.notifier).updateProfile(
+                await ref
+                    .read(profileProvider.notifier)
+                    .updateProfile(
                       name: nameController.text.trim(),
                       phone: phoneController.text.trim(),
                     );

@@ -81,7 +81,10 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
     }
   }
 
-  String _extractError(Object error, {String fallback = 'Something went wrong'}) {
+  String _extractError(
+    Object error, {
+    String fallback = 'Something went wrong',
+  }) {
     if (error is DioException) {
       return error.response?.data?['message']?.toString() ?? fallback;
     }
@@ -133,9 +136,16 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
                   const SizedBox(height: 14),
                   DropdownButtonFormField<String>(
                     initialValue: selectedOrderStatus,
-                    decoration: const InputDecoration(labelText: 'Order Status'),
+                    decoration: const InputDecoration(
+                      labelText: 'Order Status',
+                    ),
                     items: _orderStatuses
-                        .map((status) => DropdownMenuItem(value: status, child: Text(status)))
+                        .map(
+                          (status) => DropdownMenuItem(
+                            value: status,
+                            child: Text(status),
+                          ),
+                        )
                         .toList(),
                     onChanged: (value) {
                       if (value != null) {
@@ -146,9 +156,16 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
                     initialValue: selectedPaymentStatus,
-                    decoration: const InputDecoration(labelText: 'Payment Status'),
+                    decoration: const InputDecoration(
+                      labelText: 'Payment Status',
+                    ),
                     items: _paymentStatuses
-                        .map((status) => DropdownMenuItem(value: status, child: Text(status)))
+                        .map(
+                          (status) => DropdownMenuItem(
+                            value: status,
+                            child: Text(status),
+                          ),
+                        )
                         .toList(),
                     onChanged: (value) {
                       if (value != null) {
@@ -161,7 +178,9 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
                     children: [
                       Expanded(
                         child: OutlinedButton(
-                          onPressed: isSubmitting ? null : () => Navigator.pop(context),
+                          onPressed: isSubmitting
+                              ? null
+                              : () => Navigator.pop(context),
                           child: const Text('Cancel'),
                         ),
                       ),
@@ -176,11 +195,14 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
                                   }
                                   setLocalState(() => isSubmitting = true);
                                   try {
-                                    await ref.read(dioProvider).patch(
+                                    await ref
+                                        .read(dioProvider)
+                                        .patch(
                                           '/api/orders/$orderId/status',
                                           data: {
                                             'orderStatus': selectedOrderStatus,
-                                            'paymentStatus': selectedPaymentStatus,
+                                            'paymentStatus':
+                                                selectedPaymentStatus,
                                           },
                                         );
                                     if (!context.mounted) {
@@ -192,7 +214,10 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
                                   } catch (error) {
                                     setLocalState(() => isSubmitting = false);
                                     _showMessage(
-                                      _extractError(error, fallback: 'Failed to update order'),
+                                      _extractError(
+                                        error,
+                                        fallback: 'Failed to update order',
+                                      ),
                                       isError: true,
                                     );
                                   }
@@ -201,7 +226,9 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
                               ? const SizedBox(
                                   height: 18,
                                   width: 18,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
                                 )
                               : const Text('Save'),
                         ),
@@ -234,7 +261,9 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
         return StatefulBuilder(
           builder: (context, setLocalState) {
             return AlertDialog(
-              title: Text(existing == null ? 'Create Category' : 'Edit Category'),
+              title: Text(
+                existing == null ? 'Create Category' : 'Edit Category',
+              ),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -247,7 +276,9 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
                     TextField(
                       controller: descriptionController,
                       maxLines: 3,
-                      decoration: const InputDecoration(labelText: 'Description'),
+                      decoration: const InputDecoration(
+                        labelText: 'Description',
+                      ),
                     ),
                     if (existing != null) ...[
                       const SizedBox(height: 10),
@@ -255,7 +286,8 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
                         contentPadding: EdgeInsets.zero,
                         title: const Text('Active'),
                         value: isActive,
-                        onChanged: (value) => setLocalState(() => isActive = value),
+                        onChanged: (value) =>
+                            setLocalState(() => isActive = value),
                       ),
                     ],
                   ],
@@ -274,7 +306,10 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
                           final description = descriptionController.text.trim();
 
                           if (name.isEmpty) {
-                            _showMessage('Category name is required', isError: true);
+                            _showMessage(
+                              'Category name is required',
+                              isError: true,
+                            );
                             return;
                           }
 
@@ -282,15 +317,20 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
 
                           try {
                             if (existing == null) {
-                              await ref.read(dioProvider).post(
+                              await ref
+                                  .read(dioProvider)
+                                  .post(
                                     '/api/categories',
                                     data: {
                                       'name': name,
-                                      if (description.isNotEmpty) 'description': description,
+                                      if (description.isNotEmpty)
+                                        'description': description,
                                     },
                                   );
                             } else {
-                              await ref.read(dioProvider).patch(
+                              await ref
+                                  .read(dioProvider)
+                                  .patch(
                                     '/api/categories/${existing['_id']}',
                                     data: {
                                       'name': name,
@@ -303,14 +343,19 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
                               return;
                             }
                             Navigator.pop(context);
-                            _showMessage(existing == null
-                                ? 'Category created'
-                                : 'Category updated');
+                            _showMessage(
+                              existing == null
+                                  ? 'Category created'
+                                  : 'Category updated',
+                            );
                             await _loadAdminData();
                           } catch (error) {
                             setLocalState(() => isSubmitting = false);
                             _showMessage(
-                              _extractError(error, fallback: 'Failed to save category'),
+                              _extractError(
+                                error,
+                                fallback: 'Failed to save category',
+                              ),
                               isError: true,
                             );
                           }
@@ -332,8 +377,14 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
         title: const Text('Delete Category'),
         content: Text('Delete "${category['name'] ?? 'category'}"?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Delete')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete'),
+          ),
         ],
       ),
     );
@@ -390,7 +441,9 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
                     TextField(
                       controller: descriptionController,
                       maxLines: 3,
-                      decoration: const InputDecoration(labelText: 'Description'),
+                      decoration: const InputDecoration(
+                        labelText: 'Description',
+                      ),
                     ),
                     const SizedBox(height: 8),
                     TextField(
@@ -402,7 +455,9 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
                     TextField(
                       controller: discountedPriceController,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(labelText: 'Discounted Price (optional)'),
+                      decoration: const InputDecoration(
+                        labelText: 'Discounted Price (optional)',
+                      ),
                     ),
                     const SizedBox(height: 8),
                     TextField(
@@ -413,7 +468,9 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
                     const SizedBox(height: 8),
                     TextField(
                       controller: brandController,
-                      decoration: const InputDecoration(labelText: 'Brand (optional)'),
+                      decoration: const InputDecoration(
+                        labelText: 'Brand (optional)',
+                      ),
                     ),
                     const SizedBox(height: 8),
                     TextField(
@@ -454,10 +511,15 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
                       : () async {
                           final title = titleController.text.trim();
                           final description = descriptionController.text.trim();
-                          final price = num.tryParse(priceController.text.trim());
-                          final discounted =
-                              num.tryParse(discountedPriceController.text.trim());
-                          final stock = int.tryParse(stockController.text.trim());
+                          final price = num.tryParse(
+                            priceController.text.trim(),
+                          );
+                          final discounted = num.tryParse(
+                            discountedPriceController.text.trim(),
+                          );
+                          final stock = int.tryParse(
+                            stockController.text.trim(),
+                          );
                           final tags = tagsController.text
                               .split(',')
                               .map((e) => e.trim())
@@ -494,10 +556,9 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
                               payload['brand'] = brandController.text.trim();
                             }
 
-                            await ref.read(dioProvider).post(
-                                  '/api/products',
-                                  data: payload,
-                                );
+                            await ref
+                                .read(dioProvider)
+                                .post('/api/products', data: payload);
                             if (!context.mounted) {
                               return;
                             }
@@ -507,7 +568,10 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
                           } catch (error) {
                             setLocalState(() => isSubmitting = false);
                             _showMessage(
-                              _extractError(error, fallback: 'Failed to create product'),
+                              _extractError(
+                                error,
+                                fallback: 'Failed to create product',
+                              ),
                               isError: true,
                             );
                           }
@@ -529,7 +593,9 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
     }
 
     try {
-      await ref.read(dioProvider).patch(
+      await ref
+          .read(dioProvider)
+          .patch(
             '/api/products/$productId',
             data: {'isPublished': !(product['isPublished'] as bool? ?? true)},
           );
@@ -550,8 +616,14 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
         title: const Text('Delete Product'),
         content: Text('Delete "${product['title'] ?? 'product'}"?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Delete')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete'),
+          ),
         ],
       ),
     );
@@ -581,11 +653,17 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
     return Scaffold(
       appBar: AppBar(
         titleSpacing: 16,
-        title: const Row(
+        title: Row(
           children: [
-            BrandLogo(width: 115, showWordmark: false),
-            SizedBox(width: 10),
-            Text('Admin'),
+            const BrandLogo(width: 96, showWordmark: false),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                'Admin',
+                overflow: TextOverflow.ellipsis,
+                style: textTheme.titleLarge,
+              ),
+            ),
           ],
         ),
         actions: [
@@ -626,30 +704,33 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
-                    child: SegmentedButton<int>(
-                      segments: const [
-                        ButtonSegment<int>(
-                          value: 0,
-                          icon: Icon(Icons.dashboard_outlined),
-                          label: Text('Overview'),
-                        ),
-                        ButtonSegment<int>(
-                          value: 1,
-                          icon: Icon(Icons.category_outlined),
-                          label: Text('Categories'),
-                        ),
-                        ButtonSegment<int>(
-                          value: 2,
-                          icon: Icon(Icons.inventory_2_outlined),
-                          label: Text('Products'),
-                        ),
-                      ],
-                      selected: <int>{_selectedTab},
-                      onSelectionChanged: (selected) {
-                        setState(() {
-                          _selectedTab = selected.first;
-                        });
-                      },
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: SegmentedButton<int>(
+                        segments: const [
+                          ButtonSegment<int>(
+                            value: 0,
+                            icon: Icon(Icons.dashboard_outlined),
+                            label: Text('Overview'),
+                          ),
+                          ButtonSegment<int>(
+                            value: 1,
+                            icon: Icon(Icons.category_outlined),
+                            label: Text('Categories'),
+                          ),
+                          ButtonSegment<int>(
+                            value: 2,
+                            icon: Icon(Icons.inventory_2_outlined),
+                            label: Text('Products'),
+                          ),
+                        ],
+                        selected: <int>{_selectedTab},
+                        onSelectionChanged: (selected) {
+                          setState(() {
+                            _selectedTab = selected.first;
+                          });
+                        },
+                      ),
                     ),
                   ),
                   Expanded(
@@ -728,8 +809,9 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
             final orderId = item['_id']?.toString() ?? '-';
             final amount = item['totalAmount'] ?? 0;
             final createdAtRaw = item['createdAt']?.toString();
-            final createdAt =
-                createdAtRaw != null ? DateTime.tryParse(createdAtRaw) : null;
+            final createdAt = createdAtRaw != null
+                ? DateTime.tryParse(createdAtRaw)
+                : null;
             final user = item['user'] is Map<String, dynamic>
                 ? (item['user'] as Map<String, dynamic>)
                 : const <String, dynamic>{};
@@ -802,12 +884,15 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
       children: [
-        Row(
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            Expanded(
-              child: Text(
-                'Categories',
-                style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+            Text(
+              'Categories',
+              style: textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
               ),
             ),
             FilledButton.icon(
@@ -864,12 +949,15 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
       children: [
-        Row(
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            Expanded(
-              child: Text(
-                'Products',
-                style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+            Text(
+              'Products',
+              style: textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
               ),
             ),
             FilledButton.icon(
@@ -903,7 +991,9 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
                   children: [
                     Text(
                       product['title']?.toString() ?? '-',
-                      style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                      style: textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     const SizedBox(height: 6),
                     Text('Price: ${currency.format(price)}'),
@@ -911,19 +1001,21 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
                       Text('Discounted: ${currency.format(discounted)}'),
                     Text('Stock: ${product['stock'] ?? 0}'),
                     const SizedBox(height: 8),
-                    Row(
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        Expanded(
-                          child: Row(
-                            children: [
-                              const Text('Published'),
-                              const SizedBox(width: 6),
-                              Switch.adaptive(
-                                value: isPublished,
-                                onChanged: (_) => _toggleProductPublish(product),
-                              ),
-                            ],
-                          ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text('Published'),
+                            const SizedBox(width: 6),
+                            Switch.adaptive(
+                              value: isPublished,
+                              onChanged: (_) => _toggleProductPublish(product),
+                            ),
+                          ],
                         ),
                         IconButton(
                           tooltip: 'Delete',
@@ -957,29 +1049,47 @@ class _StatTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: colorScheme.outlineVariant),
-      ),
-      padding: const EdgeInsets.all(12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: colorScheme.primary),
-          const SizedBox(height: 10),
-          Text(label, style: Theme.of(context).textTheme.bodyMedium),
-          const SizedBox(height: 2),
-          Text(
-            value,
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxHeight < 82;
+
+        return Container(
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: colorScheme.outlineVariant),
           ),
-        ],
-      ),
+          padding: EdgeInsets.all(compact ? 10 : 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: colorScheme.primary, size: compact ? 20 : 24),
+              SizedBox(height: compact ? 6 : 10),
+              Text(
+                label,
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(height: 1.1),
+              ),
+              SizedBox(height: compact ? 1 : 2),
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    value,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      height: 1.1,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

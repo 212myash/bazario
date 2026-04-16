@@ -1,0 +1,176 @@
+{
+  "categories": [
+    {
+      "name": "Men Fashion",
+      "description": "Shirts, jeans, jackets and daily wear",
+      "isActive": true
+    },
+    {
+      "name": "Women Fashion",
+      "description": "Dresses, tops and ethnic collections",
+      "isActive": true
+    },
+    {
+      "name": "Electronics",
+      "description": "Audio gadgets and accessories",
+      "isActive": true
+    }
+  ],
+  "products": [
+    {
+      "title": "Urban Oversized Shirt",
+      "description": "Premium cotton oversized shirt",
+      "price": 1499,
+      "discountedPrice": 1199,
+      "stock": 40,
+      "category": "Men Fashion",
+      "brand": "UrbanEdge",
+      "tags": ["men", "shirt"],
+      "isPublished": true,
+      "images": [
+        {
+          "publicId": "shirt-1",
+          "url": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab"
+        }
+      ]
+    },
+    {
+      "title": "Slim Fit Jeans",
+      "description": "Stretchable slim fit jeans",
+      "price": 1999,
+      "discountedPrice": 1599,
+      "stock": 50,
+      "category": "Men Fashion",
+      "brand": "Levis",
+      "tags": ["men", "jeans"],
+      "isPublished": true,
+      "images": [
+        {
+          "publicId": "jeans-1",
+          "url": "https://images.unsplash.com/photo-1542272604-787c3835535d"
+        }
+      ]
+    },
+    {
+      "title": "Casual Hoodie",
+      "description": "Warm hoodie for winter",
+      "price": 1299,
+      "discountedPrice": 999,
+      "stock": 35,
+      "category": "Men Fashion",
+      "brand": "Puma",
+      "tags": ["hoodie"],
+      "isPublished": true,
+      "images": [
+        {
+          "publicId": "hoodie-1",
+          "url": "https://images.unsplash.com/photo-1523381210434-271e8be1f52b"
+        }
+      ]
+    },
+
+    {
+      "title": "Floral Summer Dress",
+      "description": "Lightweight floral dress",
+      "price": 2199,
+      "discountedPrice": 1799,
+      "stock": 30,
+      "category": "Women Fashion",
+      "brand": "Zara",
+      "tags": ["dress"],
+      "isPublished": true,
+      "images": [
+        {
+          "publicId": "dress-1",
+          "url": "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f"
+        }
+      ]
+    },
+    {
+      "title": "Crop Top",
+      "description": "Trendy cotton crop top",
+      "price": 899,
+      "discountedPrice": 699,
+      "stock": 60,
+      "category": "Women Fashion",
+      "brand": "H&M",
+      "tags": ["top"],
+      "isPublished": true,
+      "images": [
+        {
+          "publicId": "top-1",
+          "url": "https://images.unsplash.com/photo-1520975916090-3105956dac38"
+        }
+      ]
+    },
+    {
+      "title": "Designer Saree",
+      "description": "Elegant party wear saree",
+      "price": 3499,
+      "discountedPrice": 2999,
+      "stock": 20,
+      "category": "Women Fashion",
+      "brand": "Biba",
+      "tags": ["saree"],
+      "isPublished": true,
+      "images": [
+        {
+          "publicId": "saree-1",
+          "url": "https://images.unsplash.com/photo-1610030469983-98e550d6193c"
+        }
+      ]
+    },
+
+    {
+      "title": "Wireless Earbuds",
+      "description": "Deep bass earbuds",
+      "price": 2999,
+      "discountedPrice": 2499,
+      "stock": 70,
+      "category": "Electronics",
+      "brand": "Boat",
+      "tags": ["earbuds"],
+      "isPublished": true,
+      "images": [
+        {
+          "publicId": "earbuds-1",
+          "url": "https://images.unsplash.com/photo-1588423771073-b8903fbb85b5"
+        }
+      ]
+    },
+    {
+      "title": "Bluetooth Speaker",
+      "description": "Portable speaker",
+      "price": 1999,
+      "discountedPrice": 1599,
+      "stock": 45,
+      "category": "Electronics",
+      "brand": "JBL",
+      "tags": ["speaker"],
+      "isPublished": true,
+      "images": [
+        {
+          "publicId": "speaker-1",
+          "url": "https://images.unsplash.com/photo-1585386959984-a4155224a1ad"
+        }
+      ]
+    },
+    {
+      "title": "Smart Watch",
+      "description": "Fitness tracking smartwatch",
+      "price": 3999,
+      "discountedPrice": 3499,
+      "stock": 55,
+      "category": "Electronics",
+      "brand": "Noise",
+      "tags": ["watch"],
+      "isPublished": true,
+      "images": [
+        {
+          "publicId": "watch-1",
+          "url": "https://images.unsplash.com/photo-1511732351157-1865efcb7b7b"
+        }
+      ]
+    }
+  ]
+}
