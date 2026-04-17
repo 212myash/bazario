@@ -14,163 +14,808 @@
       "name": "Electronics",
       "description": "Audio gadgets and accessories",
       "isActive": true
+    },
+    {
+      "name": "Footwear",
+      "description": "Shoes, sandals and sneakers",
+      "isActive": true
+    },
+    {
+      "name": "Home Decor",
+      "description": "Decor and utility products for home",
+      "isActive": true
+    },
+    {
+      "name": "Beauty",
+      "description": "Skincare and makeup essentials",
+      "isActive": true
+    },
+    {
+      "name": "Sports",
+      "description": "Fitness and sports gear",
+      "isActive": true
+    },
+    {
+      "name": "Books",
+      "description": "Learning and reading collection",
+      "isActive": true
     }
   ],
   "products": [
     {
-      "title": "Urban Oversized Shirt",
-      "description": "Premium cotton oversized shirt",
+      "title": "Men Casual Shirt",
+      "description": "Comfort fit and breathable fabric",
       "price": 1499,
       "discountedPrice": 1199,
-      "stock": 40,
+      "stock": 25,
       "category": "Men Fashion",
       "brand": "UrbanEdge",
       "tags": ["men", "shirt"],
       "isPublished": true,
-      "images": [
-        {
-          "publicId": "shirt-1",
-          "url": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab"
-        }
-      ]
+      "images": [{ "publicId": "men-fashion-01", "url": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab" }]
     },
     {
-      "title": "Slim Fit Jeans",
-      "description": "Stretchable slim fit jeans",
-      "price": 1999,
-      "discountedPrice": 1599,
-      "stock": 50,
+      "title": "Men Slim Jeans",
+      "description": "Stretch denim for daily wear",
+      "price": 1899,
+      "discountedPrice": 1499,
+      "stock": 33,
       "category": "Men Fashion",
-      "brand": "Levis",
+      "brand": "BlueThread",
       "tags": ["men", "jeans"],
       "isPublished": true,
-      "images": [
-        {
-          "publicId": "jeans-1",
-          "url": "https://images.unsplash.com/photo-1542272604-787c3835535d"
-        }
-      ]
+      "images": [{ "publicId": "men-fashion-02", "url": "https://images.unsplash.com/photo-1542272604-787c3835535d" }]
     },
     {
-      "title": "Casual Hoodie",
-      "description": "Warm hoodie for winter",
-      "price": 1299,
-      "discountedPrice": 999,
-      "stock": 35,
+      "title": "Men Winter Hoodie",
+      "description": "Warm fleece lining hoodie",
+      "price": 1699,
+      "discountedPrice": 1399,
+      "stock": 29,
       "category": "Men Fashion",
-      "brand": "Puma",
-      "tags": ["hoodie"],
+      "brand": "NorthPeak",
+      "tags": ["men", "hoodie"],
       "isPublished": true,
-      "images": [
-        {
-          "publicId": "hoodie-1",
-          "url": "https://images.unsplash.com/photo-1523381210434-271e8be1f52b"
-        }
-      ]
-    },
-
-    {
-      "title": "Floral Summer Dress",
-      "description": "Lightweight floral dress",
-      "price": 2199,
-      "discountedPrice": 1799,
-      "stock": 30,
-      "category": "Women Fashion",
-      "brand": "Zara",
-      "tags": ["dress"],
-      "isPublished": true,
-      "images": [
-        {
-          "publicId": "dress-1",
-          "url": "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f"
-        }
-      ]
+      "images": [{ "publicId": "men-fashion-03", "url": "https://images.unsplash.com/photo-1523381210434-271e8be1f52b" }]
     },
     {
-      "title": "Crop Top",
-      "description": "Trendy cotton crop top",
-      "price": 899,
-      "discountedPrice": 699,
-      "stock": 60,
-      "category": "Women Fashion",
-      "brand": "H&M",
-      "tags": ["top"],
+      "title": "Men Formal Blazer",
+      "description": "Single-breasted formal blazer",
+      "price": 4599,
+      "discountedPrice": 3999,
+      "stock": 18,
+      "category": "Men Fashion",
+      "brand": "PrimeCut",
+      "tags": ["men", "blazer"],
       "isPublished": true,
-      "images": [
-        {
-          "publicId": "top-1",
-          "url": "https://images.unsplash.com/photo-1520975916090-3105956dac38"
-        }
-      ]
+      "images": [{ "publicId": "men-fashion-04", "url": "https://images.unsplash.com/photo-1593032465171-8bd7f5f79d5e" }]
     },
     {
-      "title": "Designer Saree",
-      "description": "Elegant party wear saree",
-      "price": 3499,
-      "discountedPrice": 2999,
-      "stock": 20,
-      "category": "Women Fashion",
-      "brand": "Biba",
-      "tags": ["saree"],
+      "title": "Men Polo T-Shirt",
+      "description": "Classic polo with soft collar",
+      "price": 1199,
+      "discountedPrice": 899,
+      "stock": 41,
+      "category": "Men Fashion",
+      "brand": "StreetMode",
+      "tags": ["men", "tshirt"],
       "isPublished": true,
-      "images": [
-        {
-          "publicId": "saree-1",
-          "url": "https://images.unsplash.com/photo-1610030469983-98e550d6193c"
-        }
-      ]
-    },
-
-    {
-      "title": "Wireless Earbuds",
-      "description": "Deep bass earbuds",
-      "price": 2999,
-      "discountedPrice": 2499,
-      "stock": 70,
-      "category": "Electronics",
-      "brand": "Boat",
-      "tags": ["earbuds"],
-      "isPublished": true,
-      "images": [
-        {
-          "publicId": "earbuds-1",
-          "url": "https://images.unsplash.com/photo-1588423771073-b8903fbb85b5"
-        }
-      ]
+      "images": [{ "publicId": "men-fashion-05", "url": "https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb" }]
     },
     {
-      "title": "Bluetooth Speaker",
-      "description": "Portable speaker",
+      "title": "Men Chino Pants",
+      "description": "Smart casual cotton chinos",
+      "price": 1799,
+      "discountedPrice": 1399,
+      "stock": 32,
+      "category": "Men Fashion",
+      "brand": "CottonDock",
+      "tags": ["men", "pants"],
+      "isPublished": true,
+      "images": [{ "publicId": "men-fashion-06", "url": "https://images.unsplash.com/photo-1473966968600-fa801b869a1a" }]
+    },
+    {
+      "title": "Men Denim Jacket",
+      "description": "Rugged denim with metal buttons",
+      "price": 3299,
+      "discountedPrice": 2799,
+      "stock": 21,
+      "category": "Men Fashion",
+      "brand": "DenimCore",
+      "tags": ["men", "jacket"],
+      "isPublished": true,
+      "images": [{ "publicId": "men-fashion-07", "url": "https://images.unsplash.com/photo-1495105787522-5334e3ffa0ef" }]
+    },
+    {
+      "title": "Men Printed Kurta",
+      "description": "Festive wear printed kurta",
       "price": 1999,
       "discountedPrice": 1599,
-      "stock": 45,
-      "category": "Electronics",
-      "brand": "JBL",
-      "tags": ["speaker"],
+      "stock": 27,
+      "category": "Men Fashion",
+      "brand": "EthniQ",
+      "tags": ["men", "kurta"],
       "isPublished": true,
-      "images": [
-        {
-          "publicId": "speaker-1",
-          "url": "https://images.unsplash.com/photo-1585386959984-a4155224a1ad"
-        }
-      ]
+      "images": [{ "publicId": "men-fashion-08", "url": "https://images.unsplash.com/photo-1618886614638-80e3c103d31a" }]
+    },
+
+    {
+      "title": "Women Floral Dress",
+      "description": "Flowy summer floral print dress",
+      "price": 2299,
+      "discountedPrice": 1899,
+      "stock": 26,
+      "category": "Women Fashion",
+      "brand": "BloomWear",
+      "tags": ["women", "dress"],
+      "isPublished": true,
+      "images": [{ "publicId": "women-fashion-01", "url": "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f" }]
     },
     {
-      "title": "Smart Watch",
-      "description": "Fitness tracking smartwatch",
-      "price": 3999,
-      "discountedPrice": 3499,
-      "stock": 55,
-      "category": "Electronics",
-      "brand": "Noise",
-      "tags": ["watch"],
+      "title": "Women Crop Top",
+      "description": "Soft cotton stylish crop top",
+      "price": 999,
+      "discountedPrice": 749,
+      "stock": 48,
+      "category": "Women Fashion",
+      "brand": "UrbanLace",
+      "tags": ["women", "top"],
       "isPublished": true,
-      "images": [
-        {
-          "publicId": "watch-1",
-          "url": "https://images.unsplash.com/photo-1511732351157-1865efcb7b7b"
-        }
-      ]
+      "images": [{ "publicId": "women-fashion-02", "url": "https://images.unsplash.com/photo-1483985988355-763728e1935b" }]
+    },
+    {
+      "title": "Women Party Saree",
+      "description": "Elegant shimmer saree",
+      "price": 3599,
+      "discountedPrice": 3099,
+      "stock": 17,
+      "category": "Women Fashion",
+      "brand": "SilkAura",
+      "tags": ["women", "saree"],
+      "isPublished": true,
+      "images": [{ "publicId": "women-fashion-03", "url": "https://images.unsplash.com/photo-1610030469983-98e550d6193c" }]
+    },
+    {
+      "title": "Women Straight Kurti",
+      "description": "Daily wear printed kurti",
+      "price": 1499,
+      "discountedPrice": 1199,
+      "stock": 34,
+      "category": "Women Fashion",
+      "brand": "RangRez",
+      "tags": ["women", "kurti"],
+      "isPublished": true,
+      "images": [{ "publicId": "women-fashion-04", "url": "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1" }]
+    },
+    {
+      "title": "Women Denim Jacket",
+      "description": "Classic denim layering jacket",
+      "price": 3199,
+      "discountedPrice": 2699,
+      "stock": 22,
+      "category": "Women Fashion",
+      "brand": "BlueMuse",
+      "tags": ["women", "jacket"],
+      "isPublished": true,
+      "images": [{ "publicId": "women-fashion-05", "url": "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f" }]
+    },
+    {
+      "title": "Women Palazzo Set",
+      "description": "Comfortable festive palazzo set",
+      "price": 2799,
+      "discountedPrice": 2399,
+      "stock": 20,
+      "category": "Women Fashion",
+      "brand": "Festiva",
+      "tags": ["women", "ethnic"],
+      "isPublished": true,
+      "images": [{ "publicId": "women-fashion-06", "url": "https://images.unsplash.com/photo-1543163521-1bf539c55dd2" }]
+    },
+    {
+      "title": "Women Formal Shirt",
+      "description": "Wrinkle free office shirt",
+      "price": 1599,
+      "discountedPrice": 1299,
+      "stock": 31,
+      "category": "Women Fashion",
+      "brand": "OfficeMuse",
+      "tags": ["women", "shirt"],
+      "isPublished": true,
+      "images": [{ "publicId": "women-fashion-07", "url": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1" }]
+    },
+    {
+      "title": "Women Knit Cardigan",
+      "description": "Soft knit cardigan for winter",
+      "price": 1999,
+      "discountedPrice": 1599,
+      "stock": 24,
+      "category": "Women Fashion",
+      "brand": "WarmNest",
+      "tags": ["women", "cardigan"],
+      "isPublished": true,
+      "images": [{ "publicId": "women-fashion-08", "url": "https://images.unsplash.com/photo-1434389677669-e08b4cac3105" }]
+    },
+
+    {
+      "title": "Wireless Earbuds X1",
+      "description": "Low latency and deep bass",
+      "price": 2999,
+      "discountedPrice": 2499,
+      "stock": 52,
+      "category": "Electronics",
+      "brand": "SoundBeat",
+      "tags": ["electronics", "earbuds"],
+      "isPublished": true,
+      "images": [{ "publicId": "electronics-01", "url": "https://images.unsplash.com/photo-1588423771073-b8903fbb85b5" }]
+    },
+    {
+      "title": "Bluetooth Speaker Mini",
+      "description": "Portable speaker with clear audio",
+      "price": 2199,
+      "discountedPrice": 1799,
+      "stock": 39,
+      "category": "Electronics",
+      "brand": "TuneBox",
+      "tags": ["electronics", "speaker"],
+      "isPublished": true,
+      "images": [{ "publicId": "electronics-02", "url": "https://images.unsplash.com/photo-1585386959984-a4155224a1ad" }]
+    },
+    {
+      "title": "Smart Watch Pro",
+      "description": "Heart rate and sleep tracking",
+      "price": 4299,
+      "discountedPrice": 3699,
+      "stock": 36,
+      "category": "Electronics",
+      "brand": "PulseTime",
+      "tags": ["electronics", "watch"],
+      "isPublished": true,
+      "images": [{ "publicId": "electronics-03", "url": "https://images.unsplash.com/photo-1511732351157-1865efcb7b7b" }]
+    },
+    {
+      "title": "Noise Cancelling Headphones",
+      "description": "Over ear immersive audio",
+      "price": 5999,
+      "discountedPrice": 5299,
+      "stock": 28,
+      "category": "Electronics",
+      "brand": "AudioZen",
+      "tags": ["electronics", "headphones"],
+      "isPublished": true,
+      "images": [{ "publicId": "electronics-04", "url": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e" }]
+    },
+    {
+      "title": "Power Bank 20000mAh",
+      "description": "Fast charging dual output",
+      "price": 2499,
+      "discountedPrice": 1999,
+      "stock": 67,
+      "category": "Electronics",
+      "brand": "ChargeMax",
+      "tags": ["electronics", "powerbank"],
+      "isPublished": true,
+      "images": [{ "publicId": "electronics-05", "url": "https://images.unsplash.com/photo-1583863788434-e58a36330cf0" }]
+    },
+    {
+      "title": "USB C Hub",
+      "description": "7 in 1 multiport adapter",
+      "price": 2799,
+      "discountedPrice": 2299,
+      "stock": 44,
+      "category": "Electronics",
+      "brand": "LinkDock",
+      "tags": ["electronics", "accessories"],
+      "isPublished": true,
+      "images": [{ "publicId": "electronics-06", "url": "https://images.unsplash.com/photo-1518770660439-4636190af475" }]
+    },
+    {
+      "title": "Mechanical Keyboard",
+      "description": "RGB backlit tactile keys",
+      "price": 3899,
+      "discountedPrice": 3299,
+      "stock": 25,
+      "category": "Electronics",
+      "brand": "KeyForge",
+      "tags": ["electronics", "keyboard"],
+      "isPublished": true,
+      "images": [{ "publicId": "electronics-07", "url": "https://images.unsplash.com/photo-1517336714739-489689fd1ca8" }]
+    },
+    {
+      "title": "Webcam Full HD",
+      "description": "1080p webcam with built in mic",
+      "price": 3199,
+      "discountedPrice": 2699,
+      "stock": 31,
+      "category": "Electronics",
+      "brand": "VisionCam",
+      "tags": ["electronics", "webcam"],
+      "isPublished": true,
+      "images": [{ "publicId": "electronics-08", "url": "https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04" }]
+    },
+
+    {
+      "title": "Running Shoes Men",
+      "description": "Lightweight cushioned running pair",
+      "price": 2999,
+      "discountedPrice": 2499,
+      "stock": 37,
+      "category": "Footwear",
+      "brand": "RunNova",
+      "tags": ["footwear", "running"],
+      "isPublished": true,
+      "images": [{ "publicId": "footwear-01", "url": "https://images.unsplash.com/photo-1542291026-7eec264c27ff" }]
+    },
+    {
+      "title": "Casual Sneakers",
+      "description": "Everyday comfort sneakers",
+      "price": 2699,
+      "discountedPrice": 2199,
+      "stock": 42,
+      "category": "Footwear",
+      "brand": "StreetStep",
+      "tags": ["footwear", "sneakers"],
+      "isPublished": true,
+      "images": [{ "publicId": "footwear-02", "url": "https://images.unsplash.com/photo-1460353581641-37baddab0fa2" }]
+    },
+    {
+      "title": "Leather Formal Shoes",
+      "description": "Classic office formal pair",
+      "price": 3599,
+      "discountedPrice": 3099,
+      "stock": 23,
+      "category": "Footwear",
+      "brand": "Formel",
+      "tags": ["footwear", "formal"],
+      "isPublished": true,
+      "images": [{ "publicId": "footwear-03", "url": "https://images.unsplash.com/photo-1614252235316-8c857d38b5f4" }]
+    },
+    {
+      "title": "Women Heels",
+      "description": "Elegant block heels",
+      "price": 2399,
+      "discountedPrice": 1999,
+      "stock": 27,
+      "category": "Footwear",
+      "brand": "HeelCraft",
+      "tags": ["footwear", "heels"],
+      "isPublished": true,
+      "images": [{ "publicId": "footwear-04", "url": "https://images.unsplash.com/photo-1543163521-1bf539c55dd2" }]
+    },
+    {
+      "title": "Slip On Loafers",
+      "description": "Easy wear premium loafers",
+      "price": 2899,
+      "discountedPrice": 2399,
+      "stock": 35,
+      "category": "Footwear",
+      "brand": "LoafLine",
+      "tags": ["footwear", "loafers"],
+      "isPublished": true,
+      "images": [{ "publicId": "footwear-05", "url": "https://images.unsplash.com/photo-1449505278894-297fdb3edbc1" }]
+    },
+    {
+      "title": "Sports Sandals",
+      "description": "Durable anti slip sandals",
+      "price": 1799,
+      "discountedPrice": 1499,
+      "stock": 46,
+      "category": "Footwear",
+      "brand": "TrailWalk",
+      "tags": ["footwear", "sandals"],
+      "isPublished": true,
+      "images": [{ "publicId": "footwear-06", "url": "https://images.unsplash.com/photo-1514989940723-e8e51635b782" }]
+    },
+    {
+      "title": "Kids School Shoes",
+      "description": "Comfortable daily school shoes",
+      "price": 1499,
+      "discountedPrice": 1199,
+      "stock": 40,
+      "category": "Footwear",
+      "brand": "KidStep",
+      "tags": ["footwear", "kids"],
+      "isPublished": true,
+      "images": [{ "publicId": "footwear-07", "url": "https://images.unsplash.com/photo-1512374382149-233c42b6a83b" }]
+    },
+    {
+      "title": "Trekking Boots",
+      "description": "Water resistant outdoor boots",
+      "price": 4799,
+      "discountedPrice": 4199,
+      "stock": 19,
+      "category": "Footwear",
+      "brand": "PeakTrail",
+      "tags": ["footwear", "boots"],
+      "isPublished": true,
+      "images": [{ "publicId": "footwear-08", "url": "https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2" }]
+    },
+
+    {
+      "title": "Wall Art Frame Set",
+      "description": "Set of three modern frames",
+      "price": 1999,
+      "discountedPrice": 1599,
+      "stock": 22,
+      "category": "Home Decor",
+      "brand": "ArtNest",
+      "tags": ["home", "wallart"],
+      "isPublished": true,
+      "images": [{ "publicId": "home-decor-01", "url": "https://images.unsplash.com/photo-1484101403633-562f891dc89a" }]
+    },
+    {
+      "title": "Scented Candle Pack",
+      "description": "Long lasting aromatic candles",
+      "price": 899,
+      "discountedPrice": 699,
+      "stock": 54,
+      "category": "Home Decor",
+      "brand": "AromaGlow",
+      "tags": ["home", "candle"],
+      "isPublished": true,
+      "images": [{ "publicId": "home-decor-02", "url": "https://images.unsplash.com/photo-1603006905003-be475563bc59" }]
+    },
+    {
+      "title": "Table Lamp Minimal",
+      "description": "Warm light study table lamp",
+      "price": 1599,
+      "discountedPrice": 1299,
+      "stock": 37,
+      "category": "Home Decor",
+      "brand": "GlowLite",
+      "tags": ["home", "lamp"],
+      "isPublished": true,
+      "images": [{ "publicId": "home-decor-03", "url": "https://images.unsplash.com/photo-1507473885765-e6ed057f782c" }]
+    },
+    {
+      "title": "Decor Vase Ceramic",
+      "description": "Hand crafted ceramic vase",
+      "price": 1299,
+      "discountedPrice": 999,
+      "stock": 28,
+      "category": "Home Decor",
+      "brand": "ClayForm",
+      "tags": ["home", "vase"],
+      "isPublished": true,
+      "images": [{ "publicId": "home-decor-04", "url": "https://images.unsplash.com/photo-1505691938895-1758d7feb511" }]
+    },
+    {
+      "title": "Bedsheet Queen Size",
+      "description": "Soft cotton bedsheet set",
+      "price": 2199,
+      "discountedPrice": 1799,
+      "stock": 31,
+      "category": "Home Decor",
+      "brand": "CottonHome",
+      "tags": ["home", "bedsheet"],
+      "isPublished": true,
+      "images": [{ "publicId": "home-decor-05", "url": "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85" }]
+    },
+    {
+      "title": "Cushion Cover Set",
+      "description": "Printed set of five covers",
+      "price": 999,
+      "discountedPrice": 799,
+      "stock": 45,
+      "category": "Home Decor",
+      "brand": "NestPrint",
+      "tags": ["home", "cushion"],
+      "isPublished": true,
+      "images": [{ "publicId": "home-decor-06", "url": "https://images.unsplash.com/photo-1493666438817-866a91353ca9" }]
+    },
+    {
+      "title": "Storage Basket",
+      "description": "Woven multipurpose basket",
+      "price": 799,
+      "discountedPrice": 599,
+      "stock": 50,
+      "category": "Home Decor",
+      "brand": "WeaveCraft",
+      "tags": ["home", "storage"],
+      "isPublished": true,
+      "images": [{ "publicId": "home-decor-07", "url": "https://images.unsplash.com/photo-1484154218962-a197022b5858" }]
+    },
+    {
+      "title": "Bathroom Mat Set",
+      "description": "Anti slip microfiber mat",
+      "price": 1199,
+      "discountedPrice": 899,
+      "stock": 34,
+      "category": "Home Decor",
+      "brand": "SoftStep",
+      "tags": ["home", "bath"],
+      "isPublished": true,
+      "images": [{ "publicId": "home-decor-08", "url": "https://images.unsplash.com/photo-1616627981455-4f2dfd3e8a2a" }]
+    },
+
+    {
+      "title": "Vitamin C Face Serum",
+      "description": "Brightening daily use serum",
+      "price": 799,
+      "discountedPrice": 649,
+      "stock": 63,
+      "category": "Beauty",
+      "brand": "GlowSkin",
+      "tags": ["beauty", "serum"],
+      "isPublished": true,
+      "images": [{ "publicId": "beauty-01", "url": "https://images.unsplash.com/photo-1596755389378-c31d21fd1273" }]
+    },
+    {
+      "title": "Hydrating Face Wash",
+      "description": "Gentle cleanser for all skin",
+      "price": 499,
+      "discountedPrice": 399,
+      "stock": 72,
+      "category": "Beauty",
+      "brand": "PureLeaf",
+      "tags": ["beauty", "cleanser"],
+      "isPublished": true,
+      "images": [{ "publicId": "beauty-02", "url": "https://images.unsplash.com/photo-1556228578-8c89e6adf883" }]
+    },
+    {
+      "title": "Matte Lipstick Set",
+      "description": "Long wear vibrant shades",
+      "price": 1199,
+      "discountedPrice": 949,
+      "stock": 46,
+      "category": "Beauty",
+      "brand": "ColorMuse",
+      "tags": ["beauty", "lipstick"],
+      "isPublished": true,
+      "images": [{ "publicId": "beauty-03", "url": "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9" }]
+    },
+    {
+      "title": "Sunscreen SPF 50",
+      "description": "Non greasy sun protection",
+      "price": 699,
+      "discountedPrice": 549,
+      "stock": 58,
+      "category": "Beauty",
+      "brand": "SunGuard",
+      "tags": ["beauty", "sunscreen"],
+      "isPublished": true,
+      "images": [{ "publicId": "beauty-04", "url": "https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8" }]
+    },
+    {
+      "title": "Hair Shampoo Herbal",
+      "description": "Sulfate free hair cleanser",
+      "price": 549,
+      "discountedPrice": 449,
+      "stock": 61,
+      "category": "Beauty",
+      "brand": "HerbalRoot",
+      "tags": ["beauty", "hair"],
+      "isPublished": true,
+      "images": [{ "publicId": "beauty-05", "url": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e" }]
+    },
+    {
+      "title": "Hair Conditioner Smooth",
+      "description": "Deep nourish conditioner",
+      "price": 599,
+      "discountedPrice": 479,
+      "stock": 57,
+      "category": "Beauty",
+      "brand": "SilkDrop",
+      "tags": ["beauty", "conditioner"],
+      "isPublished": true,
+      "images": [{ "publicId": "beauty-06", "url": "https://images.unsplash.com/photo-1620916566398-39f1143ab7be" }]
+    },
+    {
+      "title": "Body Lotion Cocoa",
+      "description": "24 hour moisturization",
+      "price": 649,
+      "discountedPrice": 529,
+      "stock": 69,
+      "category": "Beauty",
+      "brand": "CocoaCare",
+      "tags": ["beauty", "body"],
+      "isPublished": true,
+      "images": [{ "publicId": "beauty-07", "url": "https://images.unsplash.com/photo-1599733594230-6b823276abcc" }]
+    },
+    {
+      "title": "Perfume Mist",
+      "description": "Fresh floral fragrance",
+      "price": 1499,
+      "discountedPrice": 1199,
+      "stock": 43,
+      "category": "Beauty",
+      "brand": "FragranceLab",
+      "tags": ["beauty", "perfume"],
+      "isPublished": true,
+      "images": [{ "publicId": "beauty-08", "url": "https://images.unsplash.com/photo-1541643600914-78b084683601" }]
+    },
+
+    {
+      "title": "Yoga Mat Pro",
+      "description": "Non slip exercise mat",
+      "price": 1699,
+      "discountedPrice": 1399,
+      "stock": 38,
+      "category": "Sports",
+      "brand": "FlexFit",
+      "tags": ["sports", "yoga"],
+      "isPublished": true,
+      "images": [{ "publicId": "sports-01", "url": "https://images.unsplash.com/photo-1518611012118-696072aa579a" }]
+    },
+    {
+      "title": "Dumbbell Set 10kg",
+      "description": "Home workout dumbbell pair",
+      "price": 2999,
+      "discountedPrice": 2499,
+      "stock": 24,
+      "category": "Sports",
+      "brand": "IronCore",
+      "tags": ["sports", "gym"],
+      "isPublished": true,
+      "images": [{ "publicId": "sports-02", "url": "https://images.unsplash.com/photo-1517836357463-d25dfeac3438" }]
+    },
+    {
+      "title": "Cricket Bat English Willow",
+      "description": "Balanced profile power bat",
+      "price": 4499,
+      "discountedPrice": 3899,
+      "stock": 16,
+      "category": "Sports",
+      "brand": "PitchMaster",
+      "tags": ["sports", "cricket"],
+      "isPublished": true,
+      "images": [{ "publicId": "sports-03", "url": "https://images.unsplash.com/photo-1593341646782-e0b495cff86d" }]
+    },
+    {
+      "title": "Badminton Racket",
+      "description": "Lightweight graphite frame",
+      "price": 1999,
+      "discountedPrice": 1599,
+      "stock": 29,
+      "category": "Sports",
+      "brand": "SmashPro",
+      "tags": ["sports", "badminton"],
+      "isPublished": true,
+      "images": [{ "publicId": "sports-04", "url": "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea" }]
+    },
+    {
+      "title": "Football Size 5",
+      "description": "Training and match football",
+      "price": 1299,
+      "discountedPrice": 999,
+      "stock": 44,
+      "category": "Sports",
+      "brand": "GoalKick",
+      "tags": ["sports", "football"],
+      "isPublished": true,
+      "images": [{ "publicId": "sports-05", "url": "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d" }]
+    },
+    {
+      "title": "Skipping Rope",
+      "description": "Adjustable speed rope",
+      "price": 499,
+      "discountedPrice": 349,
+      "stock": 70,
+      "category": "Sports",
+      "brand": "CardioGo",
+      "tags": ["sports", "fitness"],
+      "isPublished": true,
+      "images": [{ "publicId": "sports-06", "url": "https://images.unsplash.com/photo-1599058917212-d750089bc07e" }]
+    },
+    {
+      "title": "Gym Gloves",
+      "description": "Breathable anti slip gloves",
+      "price": 699,
+      "discountedPrice": 549,
+      "stock": 53,
+      "category": "Sports",
+      "brand": "GripMax",
+      "tags": ["sports", "gloves"],
+      "isPublished": true,
+      "images": [{ "publicId": "sports-07", "url": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b" }]
+    },
+    {
+      "title": "Resistance Band Set",
+      "description": "5 level strength bands",
+      "price": 999,
+      "discountedPrice": 799,
+      "stock": 47,
+      "category": "Sports",
+      "brand": "FitBand",
+      "tags": ["sports", "bands"],
+      "isPublished": true,
+      "images": [{ "publicId": "sports-08", "url": "https://images.unsplash.com/photo-1571019613914-85f342c1d4b6" }]
+    },
+
+    {
+      "title": "Startup Fundamentals",
+      "description": "Guide to building modern startups",
+      "price": 699,
+      "discountedPrice": 549,
+      "stock": 40,
+      "category": "Books",
+      "brand": "ReadSphere",
+      "tags": ["books", "business"],
+      "isPublished": true,
+      "images": [{ "publicId": "books-01", "url": "https://images.unsplash.com/photo-1512820790803-83ca734da794" }]
+    },
+    {
+      "title": "Learn JavaScript Fast",
+      "description": "Hands on beginner to advanced",
+      "price": 799,
+      "discountedPrice": 649,
+      "stock": 33,
+      "category": "Books",
+      "brand": "CodePress",
+      "tags": ["books", "programming"],
+      "isPublished": true,
+      "images": [{ "publicId": "books-02", "url": "https://images.unsplash.com/photo-1495446815901-a7297e633e8d" }]
+    },
+    {
+      "title": "Mastering Flutter",
+      "description": "Build production mobile apps",
+      "price": 999,
+      "discountedPrice": 849,
+      "stock": 28,
+      "category": "Books",
+      "brand": "CodePress",
+      "tags": ["books", "flutter"],
+      "isPublished": true,
+      "images": [{ "publicId": "books-03", "url": "https://images.unsplash.com/photo-1476275466078-4007374efbbe" }]
+    },
+    {
+      "title": "Personal Finance 101",
+      "description": "Money habits and investing basics",
+      "price": 649,
+      "discountedPrice": 499,
+      "stock": 36,
+      "category": "Books",
+      "brand": "WiseLeaf",
+      "tags": ["books", "finance"],
+      "isPublished": true,
+      "images": [{ "publicId": "books-04", "url": "https://images.unsplash.com/photo-1519682337058-a94d519337bc" }]
+    },
+    {
+      "title": "Atomic Habits Style",
+      "description": "Practical systems for better habits",
+      "price": 749,
+      "discountedPrice": 599,
+      "stock": 45,
+      "category": "Books",
+      "brand": "GrowthReads",
+      "tags": ["books", "selfhelp"],
+      "isPublished": true,
+      "images": [{ "publicId": "books-05", "url": "https://images.unsplash.com/photo-1507842217343-583bb7270b66" }]
+    },
+    {
+      "title": "Modern UI Design",
+      "description": "Principles of digital interfaces",
+      "price": 899,
+      "discountedPrice": 729,
+      "stock": 31,
+      "category": "Books",
+      "brand": "PixelHouse",
+      "tags": ["books", "design"],
+      "isPublished": true,
+      "images": [{ "publicId": "books-06", "url": "https://images.unsplash.com/photo-1491841550275-ad7854e35ca6" }]
+    },
+    {
+      "title": "Data Structures Made Easy",
+      "description": "Interview oriented concepts",
+      "price": 849,
+      "discountedPrice": 699,
+      "stock": 34,
+      "category": "Books",
+      "brand": "AlgoHub",
+      "tags": ["books", "dsa"],
+      "isPublished": true,
+      "images": [{ "publicId": "books-07", "url": "https://images.unsplash.com/photo-1463320726281-696a485928c7" }]
+    },
+    {
+      "title": "English Speaking Guide",
+      "description": "Everyday conversation practice",
+      "price": 599,
+      "discountedPrice": 449,
+      "stock": 51,
+      "category": "Books",
+      "brand": "SpeakRight",
+      "tags": ["books", "language"],
+      "isPublished": true,
+      "images": [{ "publicId": "books-08", "url": "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f" }]
     }
   ]
 }
