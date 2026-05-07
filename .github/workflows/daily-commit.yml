@@ -1,5 +1,8 @@
 name: Daily Commit
 
+permissions:
+  contents: write
+
 on:
   schedule:
     - cron: "30 18 * * *"
@@ -10,13 +13,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
-      - run: echo "Update $(date)" >> daily-log.txt
+      - name: Make daily change
+        run: echo "Update $(date)" >> daily-log.txt
 
-      - run: |
+      - name: Commit & Push
+        run: |
           git config user.name "github-actions"
-          git config user.email "actions@github.com"
+          git config user.email "github-actions@github.com"
           git add .
           git commit -m "Daily auto commit" || echo "No changes"
           git push
