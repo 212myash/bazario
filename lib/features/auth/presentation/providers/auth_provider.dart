@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:async';
 
 import '../../../../core/network/api_client.dart';
 import '../../../../core/utils/token_storage.dart';
@@ -51,16 +52,44 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   final AuthApiService _api;
   final TokenStorage _tokenStorage;
+  static const Duration _autoLoginTimeout = Duration(seconds: 8);
+  Future<void>? _autoLoginInFlight;
+  bool _autoLoginAttempted = false;
 
   Future<void> tryAutoLogin() async {
-    final token = await _tokenStorage.getAccessToken();
-    if (token == null || token.isEmpty) {
+    if (_autoLoginAttempted) {
+      return;
+    }
+    if (_autoLoginInFlight != null) {
+      try {
+        await _autoLoginInFlight!.timeout(_autoLoginTimeout);
+      } on TimeoutException {
+        state = const AuthState(isLoggedIn: false, isLoading: false);
+        _autoLoginAttempted = true;
+        _autoLoginInFlight = null;
+      }
       return;
     }
 
-    state = state.copyWith(isLoading: true, clearError: true);
+    _autoLoginInFlight = _runAutoLogin();
     try {
-      final response = await _api.getMyProfile();
+      await _autoLoginInFlight!.timeout(_autoLoginTimeout);
+    } on TimeoutException {
+      state = const AuthState(isLoggedIn: false, isLoading: false);
+      _autoLoginAttempted = true;
+      _autoLoginInFlight = null;
+    }
+  }
+
+  Future<void> _runAutoLogin() async {
+    try {
+      final token = await _tokenStorage.getAccessToken();
+      if (token == null || token.isEmpty) {
+        return;
+      }
+
+      state = state.copyWith(isLoading: true, clearError: true);
+      final response = await _api.getMyProfile().timeout(_autoLoginTimeout);
       final user = UserModel.fromJson(
         (response['data'] ?? {}) as Map<String, dynamic>,
       );
@@ -73,9 +102,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } on DioException {
       await _tokenStorage.clear();
       state = const AuthState(isLoggedIn: false, isLoading: false);
+    } on TimeoutException {
+      await _tokenStorage.clear();
+      state = const AuthState(isLoggedIn: false, isLoading: false);
     } catch (_) {
       await _tokenStorage.clear();
       state = const AuthState(isLoggedIn: false, isLoading: false);
+    } finally {
+      _autoLoginAttempted = true;
+      _autoLoginInFlight = null;
     }
   }
 

@@ -19,7 +19,7 @@ class _StartupGateScreenState extends ConsumerState<StartupGateScreen>
   late final Animation<double> _fadeAnimation;
   late final Animation<double> _scaleAnimation;
 
-  static const _splashDelay = Duration(milliseconds: 2300);
+  static const _splashDelay = Duration(milliseconds: 1200);
 
   @override
   void initState() {
@@ -45,9 +45,8 @@ class _StartupGateScreenState extends ConsumerState<StartupGateScreen>
     final prefs = await SharedPreferences.getInstance();
     final skipSplashDelay = prefs.getBool('skipSplashDelay') ?? false;
     final isFirstTime = prefs.getBool('isFirstTime') ?? true;
-    final authState = ref.read(authProvider);
-    final isLoggedIn = authState.isLoggedIn;
-    final isAdmin = (authState.user?.role.toLowerCase() ?? '') == 'admin';
+
+    await ref.read(authProvider.notifier).tryAutoLogin();
 
     if (!skipSplashDelay) {
       await Future<void>.delayed(_splashDelay);
@@ -59,9 +58,17 @@ class _StartupGateScreenState extends ConsumerState<StartupGateScreen>
 
     if (isFirstTime) {
       context.go('/onboarding');
-    } else {
-      context.go(isLoggedIn ? (isAdmin ? '/admin' : '/home') : '/login');
+      return;
     }
+
+    if (ref.read(authProvider).isLoggedIn) {
+      final isAdmin =
+          ref.read(authProvider).user?.role.toLowerCase() == 'admin';
+      context.go(isAdmin ? '/admin' : '/home');
+      return;
+    }
+
+    context.go('/login');
   }
 
   @override

@@ -5,24 +5,44 @@ permissions:
 
 on:
   schedule:
-    - cron: "30 18 * * *"
+    # 8 runs per day (every 3 hours), aligned with 00:00 IST at 18:30 UTC
+    - cron: "30 18 * * *" # 00:00 IST
+    - cron: "30 21 * * *" # 03:00 IST
+    - cron: "30 0 * * *"  # 06:00 IST
+    - cron: "30 3 * * *"  # 09:00 IST
+    - cron: "30 6 * * *"  # 12:00 IST
+    - cron: "30 9 * * *"  # 15:00 IST
+    - cron: "30 12 * * *" # 18:00 IST
+    - cron: "30 15 * * *" # 21:00 IST
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   auto-commit:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Make daily change
-        run: echo "Update $(date)" >> daily-log.txt
-
-      - name: Commit & Push
+      - name: Configure git identity
         run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git add .
-          git commit -m "Daily auto commit" || echo "No changes"
+          git config user.name "Yash Raj"
+          git config user.email "212myashraj@gmail.com"
+
+      - name: Update daily activity file
+        run: |
+          mkdir -p .github
+          echo "$(date -u +'%Y-%m-%dT%H:%M:%SZ') daily automation commit" >> .github/daily-activity.log
+
+      - name: Commit and push
+        run: |
+          git add .github/daily-activity.log
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "chore: daily automated commit"
           git push

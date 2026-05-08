@@ -4,42 +4,50 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
-import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/cart/presentation/screens/cart_screen.dart';
 import '../../features/admin/presentation/screens/admin_screen.dart';
 import '../../features/order/presentation/screens/checkout_screen.dart';
 import '../../features/order/presentation/screens/order_details_screen.dart';
 import '../../features/order/presentation/screens/orders_screen.dart';
-import '../../features/product/presentation/screens/home_screen.dart';
+import '../../features/product/presentation/screens/storefront_dashboard_screen.dart';
 import '../../features/product/presentation/screens/product_details_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
+import '../../features/profile/presentation/screens/profile_edit_screen.dart';
+import '../../features/profile/presentation/screens/shipping_address_screen.dart';
 import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/onboarding/presentation/screens/startup_gate_screen.dart';
 import '../../features/wishlist/presentation/screens/wishlist_screen.dart';
 import '../../shared/widgets/custom_bottom_nav_bar.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authProvider);
+  final isLoggedIn = ref.watch(
+    authProvider.select((state) => state.isLoggedIn),
+  );
+  final userRole = ref.watch(
+    authProvider.select((state) => state.user?.role.toLowerCase() ?? ''),
+  );
 
   return GoRouter(
     initialLocation: '/startup',
     redirect: (context, state) {
-      final isAdmin = (authState.user?.role.toLowerCase() ?? '') == 'admin';
-      final isAuthRoute =
-          state.matchedLocation == '/startup' ||
-          state.matchedLocation == '/onboarding' ||
-          state.matchedLocation == '/login' ||
-          state.matchedLocation == '/register';
+      final isAdmin = userRole == 'admin';
+      final isStartupRoute = state.matchedLocation == '/startup';
+      final isOnboardingRoute = state.matchedLocation == '/onboarding';
+      final isLoginRoute = state.matchedLocation == '/login';
+      final signedInHome = isAdmin ? '/admin' : '/home';
 
-      if (!authState.isLoggedIn && !isAuthRoute) {
+      if (!isLoggedIn &&
+          !(isStartupRoute || isOnboardingRoute || isLoginRoute)) {
         return '/login';
       }
 
-      if (authState.isLoggedIn && isAuthRoute) {
-        return isAdmin ? '/admin' : '/home';
+      if (isLoggedIn && (isOnboardingRoute || isLoginRoute || isStartupRoute)) {
+        return signedInHome;
       }
 
-      if (authState.isLoggedIn && state.matchedLocation.startsWith('/admin') && !isAdmin) {
+      if (isLoggedIn &&
+          state.matchedLocation.startsWith('/admin') &&
+          !isAdmin) {
         return '/home';
       }
 
@@ -56,10 +64,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(
-        path: '/register',
-        builder: (context, state) => const RegisterScreen(),
-      ),
-      GoRoute(
         path: '/checkout',
         builder: (context, state) => const CheckoutScreen(),
       ),
@@ -73,7 +77,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/home',
-                builder: (context, state) => const HomeScreen(),
+                builder: (context, state) => const StorefrontDashboardScreen(),
                 routes: [
                   GoRoute(
                     path: 'product/:slug',
@@ -107,6 +111,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/profile',
                 builder: (context, state) => const ProfileScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'edit',
+                    builder: (context, state) => const ProfileEditScreen(),
+                  ),
+                  GoRoute(
+                    path: 'shipping-address',
+                    builder: (context, state) => const ShippingAddressScreen(),
+                  ),
+                ],
               ),
             ],
           ),

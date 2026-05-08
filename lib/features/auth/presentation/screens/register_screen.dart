@@ -18,9 +18,24 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  ProviderSubscription<AuthState>? _authSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _authSubscription = ref.listenManual<AuthState>(authProvider, (
+      previous,
+      next,
+    ) {
+      if (next.isLoggedIn && mounted) {
+        context.go('/home');
+      }
+    });
+  }
 
   @override
   void dispose() {
+    _authSubscription?.close();
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
@@ -31,12 +46,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
     final theme = Theme.of(context);
-
-    ref.listen(authProvider, (previous, next) {
-      if (next.isLoggedIn) {
-        context.go('/home');
-      }
-    });
 
     return Scaffold(
       body: Container(

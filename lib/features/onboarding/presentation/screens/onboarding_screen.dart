@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../../../shared/widgets/custom_button.dart';
-
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -13,29 +11,25 @@ class OnboardingScreen extends StatefulWidget {
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
-  int _currentPage = 0;
+  int _currentIndex = 0;
+  bool _isCompleting = false;
 
-  final List<_OnboardingData> _pages = const [
-    _OnboardingData(
-      title: 'Discover premium products',
+  static const _items = [
+    _OnboardData(
+      title: 'Hello',
       description:
-          'Browse curated collections, trending picks, and exclusive offers designed for fast shopping.',
-      icon: Icons.storefront_outlined,
-      gradients: [Color(0xFF2563EB), Color(0xFF60A5FA)],
+        'Discover curated picks, trending deals, and a smoother way to shop in just a few taps.',
+      imageUrl:
+          'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=1200&q=80',
+      buttonLabel: null,
     ),
-    _OnboardingData(
-      title: 'Fast checkout with trusted payments',
+    _OnboardData(
+      title: 'Ready?',
       description:
-          'Add items to cart, pay securely, and track orders from one polished shopping experience.',
-      icon: Icons.lock_outline,
-      gradients: [Color(0xFF0EA5E9), Color(0xFF22C55E)],
-    ),
-    _OnboardingData(
-      title: 'Stay updated on every order',
-      description:
-          'See delivery progress, wishlist products, and personalized shopping details in one place.',
-      icon: Icons.local_shipping_outlined,
-      gradients: [Color(0xFFF97316), Color(0xFFFACC15)],
+        'Save favorites, track orders, and checkout faster whenever you are ready.',
+      imageUrl:
+          'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1200&q=80',
+      buttonLabel: "Let's Start",
     ),
   ];
 
@@ -46,6 +40,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Future<void> _completeOnboarding() async {
+    if (_isCompleting) {
+      return;
+    }
+
+    setState(() => _isCompleting = true);
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isFirstTime', false);
 
@@ -56,260 +56,231 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     context.go('/login');
   }
 
-  void _goNext() {
-    if (_currentPage == _pages.length - 1) {
-      _completeOnboarding();
-      return;
-    }
-    _pageController.nextPage(
-      duration: const Duration(milliseconds: 320),
-      curve: Curves.easeOutCubic,
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF4F4F6),
+      body: SafeArea(
+        child: Stack(
+          children: [
+            const Positioned.fill(child: _BackdropDecor()),
+            Column(
+              children: [
+                const SizedBox(height: 28),
+                Expanded(
+                  child: PageView.builder(
+                    controller: _pageController,
+                    itemCount: _items.length,
+                    onPageChanged: (value) {
+                      setState(() => _currentIndex = value);
+                    },
+                    itemBuilder: (context, index) {
+                      final item = _items[index];
+                      final isLast = index == _items.length - 1;
+
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 18),
+                        child: _OnboardCard(
+                          item: item,
+                          isCompleting: _isCompleting,
+                          onPrimaryAction: isLast ? _completeOnboarding : null,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(
+                    _items.length,
+                    (index) => AnimatedContainer(
+                      duration: const Duration(milliseconds: 240),
+                      margin: const EdgeInsets.symmetric(horizontal: 10),
+                      height: 16,
+                      width: 16,
+                      decoration: BoxDecoration(
+                        color: _currentIndex == index
+                            ? const Color(0xFF0B4DFF)
+                            : const Color(0xFFC9DBFF),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 26),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
+}
 
-  void _skip() => _completeOnboarding();
+class _BackdropDecor extends StatelessWidget {
+  const _BackdropDecor();
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Positioned(
+          left: -190,
+          top: -170,
+          child: Container(
+            height: 520,
+            width: 520,
+            decoration: const BoxDecoration(
+              color: Color(0xFF0B4DFF),
+              shape: BoxShape.circle,
+            ),
+          ),
+        ),
+        Positioned(
+          left: -150,
+          bottom: -210,
+          child: Container(
+            height: 430,
+            width: 430,
+            decoration: const BoxDecoration(
+              color: Color(0xFFDCE8FF),
+              shape: BoxShape.circle,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _OnboardCard extends StatelessWidget {
+  const _OnboardCard({
+    required this.item,
+    required this.isCompleting,
+    this.onPrimaryAction,
+  });
+
+  final _OnboardData item;
+  final bool isCompleting;
+  final Future<void> Function()? onPrimaryAction;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-          child: Column(
-            children: [
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(onPressed: _skip, child: const Text('Skip')),
-              ),
-              Expanded(
-                child: PageView.builder(
-                  controller: _pageController,
-                  itemCount: _pages.length,
-                  onPageChanged: (value) =>
-                      setState(() => _currentPage = value),
-                  itemBuilder: (context, index) {
-                    final page = _pages[index];
-                    return AnimatedPadding(
-                      duration: const Duration(milliseconds: 250),
-                      padding: const EdgeInsets.only(top: 12),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          _OnboardingIllustration(page: page),
-                          const SizedBox(height: 36),
-                          Text(
-                            page.title,
-                            textAlign: TextAlign.center,
-                            style: theme.textTheme.headlineMedium?.copyWith(
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            page.description,
-                            textAlign: TextAlign.center,
-                            style: theme.textTheme.bodyLarge?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                              height: 1.5,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 18),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  _pages.length,
-                  (index) => AnimatedContainer(
-                    duration: const Duration(milliseconds: 260),
-                    curve: Curves.easeOutCubic,
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    height: 10,
-                    width: _currentPage == index ? 28 : 10,
-                    decoration: BoxDecoration(
-                      color: _currentPage == index
-                          ? theme.colorScheme.primary
-                          : theme.colorScheme.primary.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(999),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(40),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x18000000),
+            blurRadius: 22,
+            offset: Offset(0, 12),
+          ),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          Expanded(
+            flex: 6,
+            child: Image.network(
+              item.imageUrl,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  color: const Color(0xFFF1C7D8),
+                  alignment: Alignment.center,
+                  child: const Icon(
+                    Icons.image_not_supported_outlined,
+                    size: 56,
+                    color: Color(0xFF7A7A7A),
+                  ),
+                );
+              },
+            ),
+          ),
+          Expanded(
+            flex: 5,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 22, 24, 18),
+              child: Column(
+                children: [
+                  Text(
+                    item.title,
+                    style: theme.textTheme.displaySmall?.copyWith(
+                      fontSize: 62,
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0xFF1A1A1A),
+                      height: 0.92,
                     ),
                   ),
-                ),
-              ),
-              const SizedBox(height: 22),
-              Row(
-                children: [
-                  if (_currentPage != _pages.length - 1)
-                    Expanded(
-                      child: CustomButton(
-                        label: 'Next',
-                        icon: Icons.arrow_forward_rounded,
-                        onPressed: _goNext,
-                      ),
-                    )
-                  else
-                    Expanded(
-                      child: CustomButton(
-                        label: 'Get Started',
-                        icon: Icons.shopping_bag_outlined,
-                        onPressed: _completeOnboarding,
+                  const SizedBox(height: 14),
+                  Text(
+                    item.description,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontSize: 21,
+                      color: const Color(0xFF272727),
+                      height: 1.45,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  const Spacer(),
+                  if (item.buttonLabel != null)
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton(
+                        onPressed: (isCompleting || onPrimaryAction == null)
+                            ? null
+                            : onPrimaryAction,
+                        style: FilledButton.styleFrom(
+                          minimumSize: const Size.fromHeight(74),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(22),
+                          ),
+                          backgroundColor: const Color(0xFF0B4DFF),
+                          foregroundColor: Colors.white,
+                          textStyle: theme.textTheme.titleMedium?.copyWith(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        child: isCompleting
+                            ? const SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.4,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : Text(item.buttonLabel!),
                       ),
                     ),
                 ],
               ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _OnboardingData {
-  const _OnboardingData({
-    required this.title,
-    required this.description,
-    required this.icon,
-    required this.gradients,
-  });
-
-  final String title;
-  final String description;
-  final IconData icon;
-  final List<Color> gradients;
-}
-
-class _OnboardingIllustration extends StatelessWidget {
-  const _OnboardingIllustration({required this.page});
-
-  final _OnboardingData page;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return AspectRatio(
-      aspectRatio: 1,
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: page.gradients,
-          ),
-          borderRadius: BorderRadius.circular(32),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x26000000),
-              blurRadius: 32,
-              offset: Offset(0, 18),
             ),
-          ],
-        ),
-        child: Stack(
-          children: [
-            Positioned(
-              top: -24,
-              right: -24,
-              child: _CircleDecoration(
-                size: 120,
-                color: Colors.white.withValues(alpha: 0.14),
-              ),
-            ),
-            Positioned(
-              bottom: -28,
-              left: -28,
-              child: _CircleDecoration(
-                size: 140,
-                color: Colors.white.withValues(alpha: 0.1),
-              ),
-            ),
-            Center(
-              child: Container(
-                height: 144,
-                width: 144,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.18),
-                  borderRadius: BorderRadius.circular(36),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.25),
-                  ),
-                ),
-                child: Icon(page.icon, size: 68, color: Colors.white),
-              ),
-            ),
-            Positioned(
-              bottom: 22,
-              left: 22,
-              child: _MiniBadge(
-                title: 'Bazario',
-                subtitle: 'Premium shopping',
-                background: theme.colorScheme.surface,
-                foreground: theme.colorScheme.onSurface,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _CircleDecoration extends StatelessWidget {
-  const _CircleDecoration({required this.size, required this.color});
-
-  final double size;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: size,
-      width: size,
-      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-    );
-  }
-}
-
-class _MiniBadge extends StatelessWidget {
-  const _MiniBadge({
-    required this.title,
-    required this.subtitle,
-    required this.background,
-    required this.foreground,
-  });
-
-  final String title;
-  final String subtitle;
-  final Color background;
-  final Color foreground;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: TextStyle(color: foreground, fontWeight: FontWeight.w700),
-          ),
-          Text(
-            subtitle,
-            style: TextStyle(color: foreground.withValues(alpha: 0.7)),
           ),
         ],
       ),
     );
   }
+}
+
+class _OnboardData {
+  const _OnboardData({
+    required this.title,
+    required this.description,
+    required this.imageUrl,
+    required this.buttonLabel,
+  });
+
+  final String title;
+  final String description;
+  final String imageUrl;
+  final String? buttonLabel;
 }

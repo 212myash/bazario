@@ -18,7 +18,7 @@ class BrandLogo extends StatelessWidget {
     final logoPath = showWordmark
       ? (isDark ? 'assets/images/DarkLogo.png' : 'assets/images/LightLogo.png')
       : (isDark
-          ? 'assets/images/Darckicon.png'
+          ? 'assets/images/Darkicon.png'
           : 'assets/images/Lighticon.png');
 
     return Image.asset(

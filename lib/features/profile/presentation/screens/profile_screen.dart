@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../auth/presentation/providers/auth_provider.dart';
-import '../../../../core/theme/brand_colors.dart';
-import '../../../../shared/widgets/brand_logo.dart';
 import '../providers/profile_provider.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -25,322 +22,127 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(profileProvider);
     final user = state.user;
-    final theme = Theme.of(context);
+    final primaryAddress = user?.addresses.isNotEmpty == true
+        ? user!.addresses.first
+        : null;
 
     return Scaffold(
-      appBar: AppBar(
-        titleSpacing: 16,
-        title: const Row(
+      backgroundColor: const Color(0xFFFBFBFC),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
           children: [
-            BrandLogo(width: 98, showWordmark: false),
-            SizedBox(width: 10),
-            Text('Profile'),
+            Text(
+              'Settings',
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                fontSize: 40,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -1.5,
+                color: const Color(0xFF1D1F24),
+              ),
+            ),
+            const SizedBox(height: 20),
+            const _SectionLabel(title: 'Personal'),
+            const SizedBox(height: 10),
+            _SettingsTile(
+              label: 'Profile',
+              onTap: () => context.push('/profile/edit'),
+            ),
+            _SettingsTile(
+              label: 'Shipping Address',
+              onTap: () => context.push('/profile/shipping-address'),
+            ),
+            const _SettingsTile(label: 'Payment methods'),
+            const SizedBox(height: 20),
+            const _SectionLabel(title: 'Shop'),
+            const SizedBox(height: 10),
+            _SettingsTile(
+              label: 'Country',
+              trailingText: primaryAddress?.country ?? 'Vietnam',
+            ),
+            const _SettingsTile(label: 'Currency', trailingText: '\$ USD'),
+            const _SettingsTile(label: 'Sizes', trailingText: 'UK'),
+            const _SettingsTile(label: 'Terms and Conditions'),
+            if (state.errorMessage != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 14),
+                child: Text(
+                  state.errorMessage!,
+                  style: const TextStyle(color: Color(0xFFD92D20)),
+                ),
+              ),
           ],
         ),
       ),
-      body: user == null && state.isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            const CircleAvatar(
-                              radius: 24,
-                              backgroundColor: Colors.transparent,
-                              child: Icon(
-                                Icons.person_rounded,
-                                color: BrandColors.logoNavy,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    user?.name ?? '-',
-                                    style: theme.textTheme.titleMedium
-                                        ?.copyWith(fontWeight: FontWeight.w700),
-                                  ),
-                                  Text(
-                                    user?.email ?? '-',
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                      color: theme.colorScheme.onSurfaceVariant,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 14),
-                        _ProfileActionTile(
-                          icon: Icons.edit_outlined,
-                          title: 'Edit Profile',
-                          subtitle: user?.phone?.isEmpty ?? true
-                              ? 'Add your phone number'
-                              : user?.phone ?? '',
-                          onTap: () => _showEditProfileDialog(context, user),
-                        ),
-                        _ProfileActionTile(
-                          icon: Icons.receipt_long_outlined,
-                          title: 'My Orders',
-                          subtitle: 'Track all your placed orders',
-                          onTap: () => context.push('/orders'),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Text(
-                      'Addresses',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const Spacer(),
-                    FilledButton.tonalIcon(
-                      onPressed: () => _showAddressDialog(context),
-                      icon: const Icon(Icons.add),
-                      label: const Text('Add'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                ...?user?.addresses.map(
-                  (address) => Card(
-                    child: ListTile(
-                      title: Text(address.fullName),
-                      subtitle: Text(
-                        '${address.shortAddress}\n${address.phone}',
-                      ),
-                      trailing: Wrap(
-                        spacing: 6,
-                        children: [
-                          IconButton(
-                            onPressed: () => _showAddressDialog(
-                              context,
-                              addressId: address.id,
-                              existing: address,
-                            ),
-                            icon: const Icon(Icons.edit_outlined),
-                          ),
-                          IconButton(
-                            onPressed: () => ref
-                                .read(profileProvider.notifier)
-                                .deleteAddress(address.id),
-                            icon: const Icon(Icons.delete_outline),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                FilledButton.tonal(
-                  onPressed: () => ref.read(authProvider.notifier).logout(),
-                  child: const Text('Logout'),
-                ),
-              ],
-            ),
-    );
-  }
-
-  Future<void> _showEditProfileDialog(
-    BuildContext context,
-    dynamic user,
-  ) async {
-    final nameController = TextEditingController(text: user?.name ?? '');
-    final phoneController = TextEditingController(text: user?.phone ?? '');
-
-    await showDialog<void>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Edit Profile'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(hintText: 'Name'),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: phoneController,
-                decoration: const InputDecoration(hintText: 'Phone'),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () async {
-                await ref
-                    .read(profileProvider.notifier)
-                    .updateProfile(
-                      name: nameController.text.trim(),
-                      phone: phoneController.text.trim(),
-                    );
-                if (context.mounted) {
-                  Navigator.pop(context);
-                }
-              },
-              child: const Text('Save'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> _showAddressDialog(
-    BuildContext context, {
-    String? addressId,
-    dynamic existing,
-  }) async {
-    final fullNameController = TextEditingController(
-      text: existing?.fullName ?? '',
-    );
-    final phoneController = TextEditingController(text: existing?.phone ?? '');
-    final streetController = TextEditingController(
-      text: existing?.street ?? '',
-    );
-    final cityController = TextEditingController(text: existing?.city ?? '');
-    final stateController = TextEditingController(text: existing?.state ?? '');
-    final postalController = TextEditingController(
-      text: existing?.postalCode ?? '',
-    );
-    final countryController = TextEditingController(
-      text: existing?.country ?? 'India',
-    );
-
-    await showDialog<void>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text(addressId == null ? 'Add Address' : 'Edit Address'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: fullNameController,
-                  decoration: const InputDecoration(hintText: 'Full name'),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: phoneController,
-                  decoration: const InputDecoration(hintText: 'Phone'),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: streetController,
-                  decoration: const InputDecoration(hintText: 'Street'),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: cityController,
-                  decoration: const InputDecoration(hintText: 'City'),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: stateController,
-                  decoration: const InputDecoration(hintText: 'State'),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: postalController,
-                  decoration: const InputDecoration(hintText: 'Postal code'),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: countryController,
-                  decoration: const InputDecoration(hintText: 'Country'),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () async {
-                final payload = {
-                  'fullName': fullNameController.text.trim(),
-                  'phone': phoneController.text.trim(),
-                  'street': streetController.text.trim(),
-                  'city': cityController.text.trim(),
-                  'state': stateController.text.trim(),
-                  'postalCode': postalController.text.trim(),
-                  'country': countryController.text.trim(),
-                };
-
-                if (addressId == null) {
-                  await ref.read(profileProvider.notifier).addAddress(payload);
-                } else {
-                  await ref
-                      .read(profileProvider.notifier)
-                      .updateAddress(addressId, payload);
-                }
-                if (context.mounted) Navigator.pop(context);
-              },
-              child: const Text('Save'),
-            ),
-          ],
-        );
-      },
     );
   }
 }
 
-class _ProfileActionTile extends StatelessWidget {
-  const _ProfileActionTile({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel({required this.title});
 
-  final IconData icon;
   final String title;
-  final String subtitle;
-  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      onTap: onTap,
-      leading: Container(
-        height: 42,
-        width: 42,
-        decoration: BoxDecoration(
-          color: colorScheme.secondaryContainer,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Icon(icon, color: colorScheme.onSecondaryContainer),
+    return Text(
+      title,
+      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+        fontSize: 20,
+        fontWeight: FontWeight.w800,
+        color: const Color(0xFF23262F),
       ),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
-      subtitle: Text(subtitle),
-      trailing: const Icon(Icons.chevron_right_rounded),
+    );
+  }
+}
+
+class _SettingsTile extends StatelessWidget {
+  const _SettingsTile({required this.label, this.trailingText, this.onTap});
+
+  final String label;
+  final String? trailingText;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: const BoxDecoration(
+          border: Border(bottom: BorderSide(color: Color(0xFFE7E7EC))),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF1F2127),
+                ),
+              ),
+            ),
+            if (trailingText != null)
+              Padding(
+                padding: const EdgeInsets.only(right: 10),
+                child: Text(
+                  trailingText!,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Color(0xFF30323A),
+                  ),
+                ),
+              ),
+            const Icon(
+              Icons.chevron_right_rounded,
+              size: 24,
+              color: Color(0xFF1F2127),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

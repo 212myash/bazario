@@ -5,9 +5,11 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/theme/brand_colors.dart';
 import '../../../../shared/models/product_model.dart';
+import '../../../../shared/services/recently_viewed_store.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../../../shared/widgets/error_state_view.dart';
 import '../../../../shared/widgets/quantity_selector.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../cart/presentation/providers/cart_provider.dart';
 import '../../../wishlist/presentation/providers/wishlist_provider.dart';
 import '../providers/product_provider.dart';
@@ -57,6 +59,7 @@ class _ProductDetailsContentState
   int _quantity = 1;
   bool _isSubmitting = false;
   final _commentController = TextEditingController();
+  bool _viewRecorded = false;
 
   static const _sizes = ['S', 'M', 'L', 'XL'];
 
@@ -64,6 +67,33 @@ class _ProductDetailsContentState
   void dispose() {
     _commentController.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _recordViewedProduct();
+  }
+
+  Future<void> _recordViewedProduct() async {
+    if (_viewRecorded) {
+      return;
+    }
+    _viewRecorded = true;
+
+    final user = ref.read(authProvider).user;
+    final userKey = user == null
+        ? 'guest'
+        : user.id.trim().isNotEmpty
+        ? user.id.trim()
+        : user.email.trim().isNotEmpty
+        ? user.email.trim()
+        : 'guest';
+
+    await RecentlyViewedStore.recordView(
+      userKey: userKey,
+      product: widget.product,
+    );
   }
 
   @override

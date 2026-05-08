@@ -1,15 +1,13 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
-import '../../../../shared/widgets/app_button.dart';
-import '../../../../shared/widgets/brand_logo.dart';
-import '../../../../shared/widgets/empty_state_view.dart';
+import '../../../../shared/models/cart_model.dart';
+import '../../../../shared/models/product_model.dart';
 import '../../../../shared/widgets/error_state_view.dart';
 import '../../../../shared/widgets/loading_skeleton.dart';
-import '../../../../shared/widgets/quantity_selector.dart';
+import '../../../wishlist/presentation/providers/wishlist_provider.dart';
 import '../providers/cart_provider.dart';
 
 class CartScreen extends ConsumerStatefulWidget {
@@ -23,200 +21,735 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => ref.read(cartProvider.notifier).fetchCart());
+    Future.microtask(() async {
+      await ref.read(cartProvider.notifier).fetchCart();
+      await ref.read(wishlistProvider.notifier).fetchWishlist();
+    });
+  }
+
+  Future<void> _refresh() async {
+    await Future.wait([
+      ref.read(cartProvider.notifier).fetchCart(),
+      ref.read(wishlistProvider.notifier).fetchWishlist(),
+    ]);
+  }
+
+  String _money(double value) {
+    return '\$${value.toStringAsFixed(2).replaceAll('.', ',')}';
   }
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(cartProvider);
-    final currency = NumberFormat.currency(symbol: '₹');
-    final theme = Theme.of(context);
+    final cartState = ref.watch(cartProvider);
+    final wishlistState = ref.watch(wishlistProvider);
+    final cartItems = cartState.cart?.items ?? const <CartItemModel>[];
+    final wishlistItems = wishlistState.items;
+    final hasItems = cartItems.isNotEmpty;
+    final total = cartState.cart?.total ?? 0;
+
+    if (cartState.isLoading && cartState.cart == null) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFF8F9FB),
+        body: ListView.separated(
+          padding: const EdgeInsets.fromLTRB(16, 18, 16, 16),
+          itemBuilder: (context, index) => const LoadingSkeleton(height: 128),
+          separatorBuilder: (context, index) => const SizedBox(height: 12),
+          itemCount: 4,
+        ),
+      );
+    }
+
+    if (cartState.errorMessage != null && cartState.cart == null) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFF8F9FB),
+        body: SafeArea(
+          child: ErrorStateView(
+            message: cartState.errorMessage!,
+            onRetry: _refresh,
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
-      appBar: AppBar(
-        titleSpacing: 16,
-        title: const Row(
-          children: [
-            BrandLogo(width: 108, showWordmark: false),
-            SizedBox(width: 10),
-            Text('My Cart'),
-          ],
-        ),
-      ),
-      body: Builder(
-        builder: (context) {
-          if (state.isLoading && state.cart == null) {
-            return ListView.separated(
-              padding: const EdgeInsets.all(16),
-              itemBuilder: (context, index) =>
-                  const LoadingSkeleton(height: 96),
-              separatorBuilder: (context, index) => const SizedBox(height: 10),
-              itemCount: 5,
-            );
-          }
-
-          if (state.errorMessage != null && state.cart == null) {
-            return ErrorStateView(
-              message: state.errorMessage!,
-              onRetry: () => ref.read(cartProvider.notifier).fetchCart(),
-            );
-          }
-
-          final items = state.cart?.items ?? [];
-          if (items.isEmpty) {
-            return const EmptyStateView(
-              icon: Icons.shopping_cart_outlined,
-              title: 'Your cart is empty',
-              subtitle: 'Browse products and add your favorites to cart.',
-            );
-          }
-
-          return Column(
+      backgroundColor: const Color(0xFFF8F9FB),
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: _refresh,
+          child: Stack(
             children: [
-              Expanded(
-                child: ListView.separated(
-                  padding: const EdgeInsets.all(16),
-                  itemBuilder: (_, index) {
-                    final item = items[index];
-                    final productId = item.product?.id ?? '';
-
-                    return Card(
-                      elevation: 4,
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: SizedBox(
-                                height: 86,
-                                width: 86,
-                                child: CachedNetworkImage(
-                                  imageUrl: item.product?.images.isNotEmpty == true
-                                      ? item.product!.images.first
-                                      : '',
-                                  fit: BoxFit.cover,
-                                  errorWidget: (context, url, error) => Container(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .surfaceContainerHighest,
-                                    child: const Icon(
-                                      Icons.image_not_supported_outlined,
-                                    ),
-                                  ),
+              CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(
+                  parent: BouncingScrollPhysics(),
+                ),
+                slivers: [
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                    sliver: SliverToBoxAdapter(
+                      child: _CartHeader(count: cartItems.length),
+                    ),
+                  ),
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                    sliver: SliverToBoxAdapter(
+                      child: _ShippingAddressCard(
+                        onEditTap: () =>
+                            context.go('/profile/shipping-address'),
+                      ),
+                    ),
+                  ),
+                  if (hasItems)
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                      sliver: SliverList.builder(
+                        itemCount: cartItems.length,
+                        itemBuilder: (context, index) {
+                          final item = cartItems[index];
+                          final product = item.product;
+                          final productId = product?.id ?? '';
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _CartItemRow(
+                              item: item,
+                              priceLabel: _money(item.priceSnapshot),
+                              onTap: () {
+                                if ((product?.slug ?? '').isNotEmpty) {
+                                  context.push(
+                                    '/home/product/${product!.slug}',
+                                  );
+                                }
+                              },
+                              onRemove: () {
+                                if (productId.isNotEmpty) {
+                                  ref
+                                      .read(cartProvider.notifier)
+                                      .removeItem(productId);
+                                }
+                              },
+                              onMinus: () {
+                                if (productId.isNotEmpty && item.quantity > 1) {
+                                  ref
+                                      .read(cartProvider.notifier)
+                                      .updateItem(productId, item.quantity - 1);
+                                }
+                              },
+                              onPlus: () {
+                                if (productId.isNotEmpty) {
+                                  ref
+                                      .read(cartProvider.notifier)
+                                      .updateItem(productId, item.quantity + 1);
+                                }
+                              },
+                            ),
+                          );
+                        },
+                      ),
+                    )
+                  else
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(16, 26, 16, 0),
+                      sliver: SliverToBoxAdapter(
+                        child: Center(
+                          child: Container(
+                            height: 148,
+                            width: 148,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFF5F6F8),
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Color(0x19000000),
+                                  blurRadius: 14,
+                                  offset: Offset(0, 6),
                                 ),
-                              ),
+                              ],
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    item.product?.title ?? 'Unknown Product',
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleSmall
-                                        ?.copyWith(fontWeight: FontWeight.w600),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    currency.format(item.priceSnapshot),
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleMedium
-                                        ?.copyWith(
-                                          color: theme.colorScheme.tertiary,
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Row(
-                                    children: [
-                                      QuantitySelector(
-                                        value: item.quantity,
-                                        onDecrement: item.quantity > 1
-                                            ? () => ref
-                                                  .read(cartProvider.notifier)
-                                                  .updateItem(
-                                                    productId,
-                                                    item.quantity - 1,
-                                                  )
-                                            : () {},
-                                        onIncrement: () => ref
-                                            .read(cartProvider.notifier)
-                                            .updateItem(
-                                              productId,
-                                              item.quantity + 1,
-                                            ),
-                                      ),
-                                      const Spacer(),
-                                      IconButton(
-                                        onPressed: () => ref
-                                            .read(cartProvider.notifier)
-                                            .removeItem(productId),
-                                        icon: const Icon(Icons.delete_outline),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
+                            child: const Icon(
+                              Icons.shopping_bag_rounded,
+                              size: 62,
+                              color: Color(0xFF0B4DFF),
                             ),
-                          ],
+                          ),
                         ),
                       ),
-                    );
-                  },
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(height: 10),
-                  itemCount: items.length,
-                ),
+                    ),
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
+                    sliver: SliverToBoxAdapter(
+                      child: Text(
+                        'From Your Wishlist',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 28,
+                          letterSpacing: -0.8,
+                          color: const Color(0xFF1D1F24),
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (wishlistState.isLoading && wishlistItems.isEmpty)
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                      sliver: SliverList.builder(
+                        itemCount: 2,
+                        itemBuilder: (context, index) => const Padding(
+                          padding: EdgeInsets.only(bottom: 10),
+                          child: LoadingSkeleton(height: 122),
+                        ),
+                      ),
+                    )
+                  else if (wishlistItems.isEmpty)
+                    const SliverPadding(
+                      padding: EdgeInsets.fromLTRB(16, 10, 16, 0),
+                      sliver: SliverToBoxAdapter(
+                        child: Text('No wishlist items yet.'),
+                      ),
+                    )
+                  else
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 120),
+                      sliver: SliverList.builder(
+                        itemCount: wishlistItems.length,
+                        itemBuilder: (context, index) {
+                          final product = wishlistItems[index];
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _WishlistRow(
+                              product: product,
+                              priceLabel: _money(product.displayPrice),
+                              onTap: () =>
+                                  context.push('/home/product/${product.slug}'),
+                              onRemove: () => ref
+                                  .read(wishlistProvider.notifier)
+                                  .remove(product.id),
+                              onAddToCart: () async {
+                                await ref
+                                    .read(cartProvider.notifier)
+                                    .addItem(product.id);
+                                if (!context.mounted) {
+                                  return;
+                                }
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Added to cart'),
+                                  ),
+                                );
+                              },
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                ],
               ),
-              Container(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 18),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color(0x12000000),
-                      blurRadius: 18,
-                      offset: Offset(0, -6),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          'Total',
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        const Spacer(),
-                        Text(
-                          currency.format(state.cart?.total ?? 0),
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(
-                                fontWeight: FontWeight.w700,
-                                color: theme.colorScheme.tertiary,
-                              ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    AppButton(
-                      label: 'Proceed to Checkout',
-                      onPressed: () => context.push('/checkout'),
-                    ),
-                  ],
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: _CheckoutBar(
+                  totalLabel: _money(total),
+                  enabled: hasItems,
+                  onCheckout: () => context.push('/checkout'),
                 ),
               ),
             ],
-          );
-        },
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CartHeader extends StatelessWidget {
+  const _CartHeader({required this.count});
+
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Text(
+          'Cart',
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+            fontSize: 34,
+            fontWeight: FontWeight.w900,
+            letterSpacing: -1.2,
+            color: const Color(0xFF1D1F24),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Container(
+          height: 34,
+          width: 34,
+          decoration: const BoxDecoration(
+            color: Color(0xFFDDE3F4),
+            shape: BoxShape.circle,
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            '$count',
+            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ShippingAddressCard extends StatelessWidget {
+  const _ShippingAddressCard({required this.onEditTap});
+
+  final VoidCallback onEditTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF0F1F4),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Shipping Address',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF1E2128),
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  '26, Duong So 2, Thao Dien Ward, An Phu, District 2, Ho Chi Minh city',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF3D4048),
+                    height: 1.25,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Material(
+            color: const Color(0xFF0B4DFF),
+            shape: const CircleBorder(),
+            child: InkWell(
+              onTap: onEditTap,
+              customBorder: const CircleBorder(),
+              child: const SizedBox(
+                height: 42,
+                width: 42,
+                child: Icon(Icons.edit_rounded, color: Colors.white, size: 20),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CartItemRow extends StatelessWidget {
+  const _CartItemRow({
+    required this.item,
+    required this.priceLabel,
+    required this.onTap,
+    required this.onRemove,
+    required this.onMinus,
+    required this.onPlus,
+  });
+
+  final CartItemModel item;
+  final String priceLabel;
+  final VoidCallback onTap;
+  final VoidCallback onRemove;
+  final VoidCallback onMinus;
+  final VoidCallback onPlus;
+
+  @override
+  Widget build(BuildContext context) {
+    final product = item.product;
+
+    return SizedBox(
+      height: 126,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          GestureDetector(
+            onTap: onTap,
+            child: SizedBox(
+              width: 132,
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: (product?.images.isEmpty ?? true)
+                          ? const ColoredBox(
+                              color: Color(0xFFF0F1F4),
+                              child: Icon(Icons.image_outlined),
+                            )
+                          : CachedNetworkImage(
+                              imageUrl: product!.images.first,
+                              fit: BoxFit.cover,
+                              errorWidget: (context, url, error) =>
+                                  const ColoredBox(
+                                    color: Color(0xFFF0F1F4),
+                                    child: Icon(Icons.image_outlined),
+                                  ),
+                            ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 8,
+                    bottom: 8,
+                    child: Material(
+                      color: Colors.white,
+                      shape: const CircleBorder(),
+                      child: InkWell(
+                        onTap: onRemove,
+                        customBorder: const CircleBorder(),
+                        child: const SizedBox(
+                          height: 34,
+                          width: 34,
+                          child: Icon(
+                            Icons.delete_outline,
+                            color: Color(0xFFFF6B88),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                GestureDetector(
+                  onTap: onTap,
+                  child: Text(
+                    product?.title ?? 'Unknown Product',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 17,
+                      height: 1.2,
+                      color: Color(0xFF23262F),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'Pink, Size M',
+                  style: TextStyle(fontSize: 17, color: Color(0xFF2D3038)),
+                ),
+                const Spacer(),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        priceLabel,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 30,
+                          letterSpacing: -1,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF1B1D21),
+                        ),
+                      ),
+                    ),
+                    _CircleAction(icon: Icons.remove, onTap: onMinus),
+                    const SizedBox(width: 8),
+                    _QtyBox(value: item.quantity),
+                    const SizedBox(width: 8),
+                    _CircleAction(icon: Icons.add, onTap: onPlus),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _WishlistRow extends StatelessWidget {
+  const _WishlistRow({
+    required this.product,
+    required this.priceLabel,
+    required this.onTap,
+    required this.onRemove,
+    required this.onAddToCart,
+  });
+
+  final ProductModel product;
+  final String priceLabel;
+  final VoidCallback onTap;
+  final VoidCallback onRemove;
+  final VoidCallback onAddToCart;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 124,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          GestureDetector(
+            onTap: onTap,
+            child: SizedBox(
+              width: 132,
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: product.images.isEmpty
+                          ? const ColoredBox(
+                              color: Color(0xFFF0F1F4),
+                              child: Icon(Icons.image_outlined),
+                            )
+                          : CachedNetworkImage(
+                              imageUrl: product.images.first,
+                              fit: BoxFit.cover,
+                              errorWidget: (context, url, error) =>
+                                  const ColoredBox(
+                                    color: Color(0xFFF0F1F4),
+                                    child: Icon(Icons.image_outlined),
+                                  ),
+                            ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 8,
+                    bottom: 8,
+                    child: Material(
+                      color: Colors.white,
+                      shape: const CircleBorder(),
+                      child: InkWell(
+                        onTap: onRemove,
+                        customBorder: const CircleBorder(),
+                        child: const SizedBox(
+                          height: 34,
+                          width: 34,
+                          child: Icon(
+                            Icons.delete_outline,
+                            color: Color(0xFFFF6B88),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                GestureDetector(
+                  onTap: onTap,
+                  child: Text(
+                    product.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 17,
+                      height: 1.2,
+                      color: Color(0xFF23262F),
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  priceLabel,
+                  style: const TextStyle(
+                    fontSize: 28,
+                    letterSpacing: -1,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF1B1D21),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    _Tag(label: product.category?.name ?? 'Pink'),
+                    const SizedBox(width: 8),
+                    const _Tag(label: 'M'),
+                    const Spacer(),
+                    GestureDetector(
+                      onTap: onAddToCart,
+                      child: const Icon(
+                        Icons.add_shopping_cart_rounded,
+                        color: Color(0xFF0B4DFF),
+                        size: 32,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CircleAction extends StatelessWidget {
+  const _CircleAction({required this.icon, required this.onTap});
+
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      shape: const CircleBorder(
+        side: BorderSide(color: Color(0xFF0B4DFF), width: 2.2),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        customBorder: const CircleBorder(),
+        child: SizedBox(
+          height: 32,
+          width: 32,
+          child: Icon(icon, size: 18, color: const Color(0xFF0B4DFF)),
+        ),
+      ),
+    );
+  }
+}
+
+class _QtyBox extends StatelessWidget {
+  const _QtyBox({required this.value});
+
+  final int value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(minWidth: 44),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE8ECF8),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        '$value',
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          fontSize: 18,
+          color: Color(0xFF232632),
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+}
+
+class _Tag extends StatelessWidget {
+  const _Tag({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(minWidth: 44, maxWidth: 90),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE8ECF8),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(fontSize: 16, color: Color(0xFF232632)),
+      ),
+    );
+  }
+}
+
+class _CheckoutBar extends StatelessWidget {
+  const _CheckoutBar({
+    required this.totalLabel,
+    required this.enabled,
+    required this.onCheckout,
+  });
+
+  final String totalLabel;
+  final bool enabled;
+  final VoidCallback onCheckout;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+      decoration: const BoxDecoration(
+        color: Color(0xFFF3F3F4),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x15000000),
+            blurRadius: 10,
+            offset: Offset(0, -3),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              'Total $totalLabel',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 30,
+                letterSpacing: -1.1,
+                fontWeight: FontWeight.w900,
+                color: Color(0xFF1B1D21),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          SizedBox(
+            height: 50,
+            width: 138,
+            child: FilledButton(
+              onPressed: enabled ? onCheckout : null,
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFF0B4DFF),
+                disabledBackgroundColor: const Color(0xFFE7E7E9),
+                foregroundColor: Colors.white,
+                disabledForegroundColor: const Color(0xFF222222),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text(
+                'Checkout',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

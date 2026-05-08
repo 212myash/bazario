@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -31,11 +33,24 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
   List<dynamic> _categories = const [];
   List<dynamic> _products = const [];
   int _selectedTab = 0;
+  String _orderSearchQuery = '';
+  String _orderStatusFilter = 'all';
+  String _productSearchQuery = '';
+  String _productSort = 'latest';
+  Timer? _orderSearchDebounce;
+  Timer? _productSearchDebounce;
 
   @override
   void initState() {
     super.initState();
     _loadAdminData();
+  }
+
+  @override
+  void dispose() {
+    _orderSearchDebounce?.cancel();
+    _productSearchDebounce?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadAdminData() async {
@@ -101,6 +116,112 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
         backgroundColor: isError ? Theme.of(context).colorScheme.error : null,
       ),
     );
+  }
+
+  List<Map<String, dynamic>> _getFilteredOrders() {
+    final query = _orderSearchQuery.trim().toLowerCase();
+    final mapped = _orders
+        .whereType<Map<String, dynamic>>()
+        .where((order) {
+          if (_orderStatusFilter == 'all') {
+            return true;
+          }
+          final status = order['orderStatus']?.toString().toLowerCase() ?? '';
+          return status == _orderStatusFilter;
+        })
+        .where((order) {
+          if (query.isEmpty) {
+            return true;
+          }
+          final user = order['user'] is Map<String, dynamic>
+              ? (order['user'] as Map<String, dynamic>)
+              : const <String, dynamic>{};
+          final orderId = order['_id']?.toString().toLowerCase() ?? '';
+          final name = user['name']?.toString().toLowerCase() ?? '';
+          final email = user['email']?.toString().toLowerCase() ?? '';
+          return orderId.contains(query) ||
+              name.contains(query) ||
+              email.contains(query);
+        })
+        .toList();
+
+    mapped.sort((a, b) {
+      final aTime = DateTime.tryParse(a['createdAt']?.toString() ?? '');
+      final bTime = DateTime.tryParse(b['createdAt']?.toString() ?? '');
+      if (aTime == null && bTime == null) {
+        return 0;
+      }
+      if (aTime == null) {
+        return 1;
+      }
+      if (bTime == null) {
+        return -1;
+      }
+      return bTime.compareTo(aTime);
+    });
+
+    return mapped;
+  }
+
+  List<Map<String, dynamic>> _getFilteredProducts() {
+    final query = _productSearchQuery.trim().toLowerCase();
+    final mapped = _products.whereType<Map<String, dynamic>>().where((product) {
+      if (query.isEmpty) {
+        return true;
+      }
+      final title = product['title']?.toString().toLowerCase() ?? '';
+      final brand = product['brand']?.toString().toLowerCase() ?? '';
+      final category = _resolveProductCategoryName(product).toLowerCase();
+      return title.contains(query) ||
+          brand.contains(query) ||
+          category.contains(query);
+    }).toList();
+
+    switch (_productSort) {
+      case 'priceHigh':
+        mapped.sort((a, b) => _toNum(b['price']).compareTo(_toNum(a['price'])));
+        break;
+      case 'priceLow':
+        mapped.sort((a, b) => _toNum(a['price']).compareTo(_toNum(b['price'])));
+        break;
+      case 'stockLow':
+        mapped.sort((a, b) => _toNum(a['stock']).compareTo(_toNum(b['stock'])));
+        break;
+      case 'latest':
+        mapped.sort((a, b) {
+          final aTime = DateTime.tryParse(a['createdAt']?.toString() ?? '');
+          final bTime = DateTime.tryParse(b['createdAt']?.toString() ?? '');
+          if (aTime == null && bTime == null) {
+            return 0;
+          }
+          if (aTime == null) {
+            return 1;
+          }
+          if (bTime == null) {
+            return -1;
+          }
+          return bTime.compareTo(aTime);
+        });
+        break;
+    }
+
+    return mapped;
+  }
+
+  num _toNum(dynamic value) {
+    if (value is num) {
+      return value;
+    }
+    return num.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
+  String _resolveProductCategoryName(Map<String, dynamic> product) {
+    if (product['category'] is Map<String, dynamic>) {
+      return (product['category'] as Map<String, dynamic>)['name']
+              ?.toString() ??
+          'Uncategorized';
+    }
+    return 'Uncategorized';
   }
 
   Future<void> _showUpdateOrderSheet(Map<String, dynamic> order) async {
@@ -649,24 +770,48 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
     final currency = NumberFormat.currency(symbol: 'INR ');
     final dateFormat = DateFormat('dd MMM yyyy, hh:mm a');
     final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+    final totalUsers = (_dashboard['usersCount'] as num?)?.toInt() ?? 0;
+    final totalProducts = (_dashboard['productsCount'] as num?)?.toInt() ?? 0;
+    final totalOrders = (_dashboard['ordersCount'] as num?)?.toInt() ?? 0;
+    final totalRevenue = (_dashboard['totalRevenue'] as num?) ?? 0;
 
     return Scaffold(
       appBar: AppBar(
         titleSpacing: 16,
         title: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             const BrandLogo(width: 96, showWordmark: false),
             const SizedBox(width: 8),
             Flexible(
-              child: Text(
-                'Admin',
-                overflow: TextOverflow.ellipsis,
-                style: textTheme.titleLarge,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Admin',
+                    overflow: TextOverflow.ellipsis,
+                    style: textTheme.titleLarge,
+                  ),
+                  Text(
+                    'Control Center',
+                    overflow: TextOverflow.ellipsis,
+                    style: textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
         ),
         actions: [
+          IconButton(
+            tooltip: 'Refresh',
+            onPressed: _loadAdminData,
+            icon: const Icon(Icons.refresh_rounded),
+          ),
           IconButton(
             tooltip: 'Logout',
             onPressed: () => ref.read(authProvider.notifier).logout(),
@@ -682,20 +827,30 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
             ? ListView(
                 padding: const EdgeInsets.all(20),
                 children: [
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(_errorMessage!, style: textTheme.bodyLarge),
-                          const SizedBox(height: 12),
-                          FilledButton(
-                            onPressed: _loadAdminData,
-                            child: const Text('Try again'),
-                          ),
-                        ],
-                      ),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: colorScheme.surface,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: colorScheme.outlineVariant),
+                    ),
+                    padding: const EdgeInsets.all(18),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          Icons.cloud_off_rounded,
+                          color: colorScheme.error,
+                          size: 26,
+                        ),
+                        const SizedBox(height: 10),
+                        Text(_errorMessage!, style: textTheme.bodyLarge),
+                        const SizedBox(height: 12),
+                        FilledButton.icon(
+                          onPressed: _loadAdminData,
+                          icon: const Icon(Icons.refresh_rounded),
+                          label: const Text('Try again'),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -703,33 +858,43 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
             : Column(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
+                    child: _DashboardHero(
+                      totalUsers: totalUsers,
+                      totalOrders: totalOrders,
+                      totalRevenue: currency.format(totalRevenue),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
-                      child: SegmentedButton<int>(
-                        segments: const [
-                          ButtonSegment<int>(
-                            value: 0,
-                            icon: Icon(Icons.dashboard_outlined),
-                            label: Text('Overview'),
+                      child: Row(
+                        children: [
+                          _TabPill(
+                            label: 'Overview',
+                            icon: Icons.dashboard_customize_outlined,
+                            countLabel: '$totalProducts',
+                            selected: _selectedTab == 0,
+                            onTap: () => setState(() => _selectedTab = 0),
                           ),
-                          ButtonSegment<int>(
-                            value: 1,
-                            icon: Icon(Icons.category_outlined),
-                            label: Text('Categories'),
+                          const SizedBox(width: 8),
+                          _TabPill(
+                            label: 'Categories',
+                            icon: Icons.category_outlined,
+                            countLabel: '${_categories.length}',
+                            selected: _selectedTab == 1,
+                            onTap: () => setState(() => _selectedTab = 1),
                           ),
-                          ButtonSegment<int>(
-                            value: 2,
-                            icon: Icon(Icons.inventory_2_outlined),
-                            label: Text('Products'),
+                          const SizedBox(width: 8),
+                          _TabPill(
+                            label: 'Products',
+                            icon: Icons.inventory_2_outlined,
+                            countLabel: '${_products.length}',
+                            selected: _selectedTab == 2,
+                            onTap: () => setState(() => _selectedTab = 2),
                           ),
                         ],
-                        selected: <int>{_selectedTab},
-                        onSelectionChanged: (selected) {
-                          setState(() {
-                            _selectedTab = selected.first;
-                          });
-                        },
                       ),
                     ),
                   ),
@@ -751,61 +916,144 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
     DateFormat dateFormat,
     TextTheme textTheme,
   ) {
+    final filteredOrders = _getFilteredOrders();
+
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
+      cacheExtent: 900,
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
       children: [
         Text(
           'Dashboard Overview',
           style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
         ),
+        const SizedBox(height: 4),
+        Text(
+          'Track performance and manage orders quickly.',
+          style: textTheme.bodyMedium?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
         const SizedBox(height: 12),
-        GridView.count(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: 2,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-          childAspectRatio: 1.55,
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final isWide = constraints.maxWidth >= 880;
+            return GridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: isWide ? 4 : 2,
+              crossAxisSpacing: 10,
+              mainAxisSpacing: 10,
+              childAspectRatio: isWide ? 1.35 : 1.55,
+              children: [
+                _StatTile(
+                  label: 'Users',
+                  value: '${_dashboard['usersCount'] ?? 0}',
+                  icon: Icons.people_outline,
+                ),
+                _StatTile(
+                  label: 'Products',
+                  value: '${_dashboard['productsCount'] ?? 0}',
+                  icon: Icons.inventory_2_outlined,
+                ),
+                _StatTile(
+                  label: 'Orders',
+                  value: '${_dashboard['ordersCount'] ?? 0}',
+                  icon: Icons.receipt_long_outlined,
+                ),
+                _StatTile(
+                  label: 'Revenue',
+                  value: currency.format(_dashboard['totalRevenue'] ?? 0),
+                  icon: Icons.payments_outlined,
+                ),
+              ],
+            );
+          },
+        ),
+        const SizedBox(height: 20),
+        Row(
           children: [
-            _StatTile(
-              label: 'Users',
-              value: '${_dashboard['usersCount'] ?? 0}',
-              icon: Icons.people_outline,
+            Text(
+              'Recent Orders',
+              style: textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
             ),
-            _StatTile(
-              label: 'Products',
-              value: '${_dashboard['productsCount'] ?? 0}',
-              icon: Icons.inventory_2_outlined,
-            ),
-            _StatTile(
-              label: 'Orders',
-              value: '${_dashboard['ordersCount'] ?? 0}',
-              icon: Icons.receipt_long_outlined,
-            ),
-            _StatTile(
-              label: 'Revenue',
-              value: currency.format(_dashboard['totalRevenue'] ?? 0),
-              icon: Icons.payments_outlined,
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                '${filteredOrders.length}',
+                style: textTheme.labelMedium,
+              ),
             ),
           ],
         ),
-        const SizedBox(height: 20),
-        Text(
-          'Recent Orders',
-          style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            SizedBox(
+              width: 300,
+              child: TextField(
+                onChanged: (value) {
+                  _orderSearchDebounce?.cancel();
+                  _orderSearchDebounce = Timer(
+                    const Duration(milliseconds: 220),
+                    () {
+                      if (!mounted) {
+                        return;
+                      }
+                      setState(() => _orderSearchQuery = value);
+                    },
+                  );
+                },
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.search_rounded),
+                  labelText: 'Search order, customer or email',
+                ),
+              ),
+            ),
+            SizedBox(
+              width: 190,
+              child: DropdownButtonFormField<String>(
+                value: _orderStatusFilter,
+                decoration: const InputDecoration(labelText: 'Order status'),
+                items: [
+                  const DropdownMenuItem(value: 'all', child: Text('All')),
+                  ..._orderStatuses.map(
+                    (status) => DropdownMenuItem(
+                      value: status,
+                      child: Text(
+                        status[0].toUpperCase() + status.substring(1),
+                      ),
+                    ),
+                  ),
+                ],
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() => _orderStatusFilter = value);
+                  }
+                },
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 10),
-        if (_orders.isEmpty)
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text('No orders found.', style: textTheme.bodyMedium),
-            ),
+        if (filteredOrders.isEmpty)
+          _EmptyPanel(
+            icon: Icons.receipt_long_outlined,
+            title: 'No matching orders',
+            subtitle: 'Try changing the search or status filter.',
           )
         else
-          ..._orders.map((order) {
-            final item = order as Map<String, dynamic>;
+          ...filteredOrders.map((item) {
             final orderId = item['_id']?.toString() ?? '-';
             final amount = item['totalAmount'] ?? 0;
             final createdAtRaw = item['createdAt']?.toString();
@@ -816,62 +1064,85 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
                 ? (item['user'] as Map<String, dynamic>)
                 : const <String, dynamic>{};
 
-            return Card(
+            return Container(
               margin: const EdgeInsets.only(bottom: 10),
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Order ${orderId.length > 10 ? orderId.substring(0, 10) : orderId}',
-                      style: textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text('Customer: ${user['name'] ?? 'N/A'}'),
-                    Text('Email: ${user['email'] ?? 'N/A'}'),
-                    const SizedBox(height: 6),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 6,
-                      children: [
-                        Chip(
-                          label: Text(
-                            'Status: ${item['orderStatus'] ?? 'pending'}',
-                          ),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.outlineVariant,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Order ${orderId.length > 10 ? orderId.substring(0, 10) : orderId}',
+                              style: textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Customer: ${user['name'] ?? 'N/A'}',
+                              style: textTheme.bodyMedium,
+                            ),
+                          ],
                         ),
-                        Chip(
-                          label: Text(
-                            'Payment: ${item['paymentStatus'] ?? 'pending'}',
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Total: ${currency.format(amount)}',
-                      style: textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.w700,
                       ),
-                    ),
-                    if (createdAt != null)
                       Text(
-                        'Placed: ${dateFormat.format(createdAt.toLocal())}',
-                        style: textTheme.bodySmall,
+                        currency.format(amount),
+                        style: textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Email: ${user['email'] ?? 'N/A'}',
+                    style: textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _InfoBadge(
+                        icon: Icons.local_shipping_outlined,
+                        label: '${item['orderStatus'] ?? 'pending'}',
+                      ),
+                      _InfoBadge(
+                        icon: Icons.payments_outlined,
+                        label: '${item['paymentStatus'] ?? 'pending'}',
+                      ),
+                    ],
+                  ),
+                  if (createdAt != null) ...[
                     const SizedBox(height: 8),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: OutlinedButton.icon(
-                        onPressed: () => _showUpdateOrderSheet(item),
-                        icon: const Icon(Icons.edit_outlined),
-                        label: const Text('Update Status'),
-                      ),
+                    Text(
+                      'Placed: ${dateFormat.format(createdAt.toLocal())}',
+                      style: textTheme.bodySmall,
                     ),
                   ],
-                ),
+                  const SizedBox(height: 10),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: OutlinedButton.icon(
+                      onPressed: () => _showUpdateOrderSheet(item),
+                      icon: const Icon(Icons.edit_outlined),
+                      label: const Text('Update Status'),
+                    ),
+                  ),
+                ],
               ),
             );
           }),
@@ -882,6 +1153,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
   Widget _buildCategoriesTab(TextTheme textTheme) {
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
+      cacheExtent: 800,
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
       children: [
         Wrap(
@@ -895,48 +1167,92 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
                 fontWeight: FontWeight.w700,
               ),
             ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                '${_categories.length}',
+                style: textTheme.labelMedium,
+              ),
+            ),
             FilledButton.icon(
               onPressed: () => _showCategoryDialog(),
               icon: const Icon(Icons.add),
-              label: const Text('Add'),
+              label: const Text('Add Category'),
             ),
           ],
         ),
         const SizedBox(height: 12),
         if (_categories.isEmpty)
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text('No categories found.', style: textTheme.bodyMedium),
-            ),
+          _EmptyPanel(
+            icon: Icons.category_outlined,
+            title: 'No categories found',
+            subtitle: 'Create your first category to organize products.',
           )
         else
           ..._categories.map((item) {
             final category = item as Map<String, dynamic>;
-            return Card(
+            final isActive = category['isActive'] as bool? ?? true;
+            return Container(
               margin: const EdgeInsets.only(bottom: 10),
-              child: ListTile(
-                title: Text(category['name']?.toString() ?? '-'),
-                subtitle: Text(
-                  category['description']?.toString().isNotEmpty == true
-                      ? category['description'].toString()
-                      : 'No description',
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.outlineVariant,
                 ),
-                trailing: Wrap(
-                  spacing: 6,
-                  children: [
-                    IconButton(
-                      tooltip: 'Edit',
-                      onPressed: () => _showCategoryDialog(existing: category),
-                      icon: const Icon(Icons.edit_outlined),
-                    ),
-                    IconButton(
-                      tooltip: 'Delete',
-                      onPressed: () => _deleteCategory(category),
-                      icon: const Icon(Icons.delete_outline),
-                    ),
-                  ],
-                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          category['name']?.toString() ?? '-',
+                          style: textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      _InfoBadge(
+                        icon: isActive
+                            ? Icons.check_circle_outline
+                            : Icons.pause_circle_outline,
+                        label: isActive ? 'Active' : 'Inactive',
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    category['description']?.toString().isNotEmpty == true
+                        ? category['description'].toString()
+                        : 'No description',
+                    style: textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      OutlinedButton.icon(
+                        onPressed: () =>
+                            _showCategoryDialog(existing: category),
+                        icon: const Icon(Icons.edit_outlined),
+                        label: const Text('Edit'),
+                      ),
+                      const SizedBox(width: 8),
+                      OutlinedButton.icon(
+                        onPressed: () => _deleteCategory(category),
+                        icon: const Icon(Icons.delete_outline),
+                        label: const Text('Delete'),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             );
           }),
@@ -945,8 +1261,11 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
   }
 
   Widget _buildProductsTab(TextTheme textTheme, NumberFormat currency) {
+    final filteredProducts = _getFilteredProducts();
+
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
+      cacheExtent: 900,
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
       children: [
         Wrap(
@@ -960,72 +1279,162 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
                 fontWeight: FontWeight.w700,
               ),
             ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                '${filteredProducts.length}/${_products.length}',
+                style: textTheme.labelMedium,
+              ),
+            ),
             FilledButton.icon(
               onPressed: _showProductDialog,
               icon: const Icon(Icons.add),
-              label: const Text('Add'),
+              label: const Text('Add Product'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            SizedBox(
+              width: 300,
+              child: TextField(
+                onChanged: (value) {
+                  _productSearchDebounce?.cancel();
+                  _productSearchDebounce = Timer(
+                    const Duration(milliseconds: 220),
+                    () {
+                      if (!mounted) {
+                        return;
+                      }
+                      setState(() => _productSearchQuery = value);
+                    },
+                  );
+                },
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.search_rounded),
+                  labelText: 'Search product, brand or category',
+                ),
+              ),
+            ),
+            SizedBox(
+              width: 190,
+              child: DropdownButtonFormField<String>(
+                value: _productSort,
+                decoration: const InputDecoration(labelText: 'Sort by'),
+                items: const [
+                  DropdownMenuItem(value: 'latest', child: Text('Latest')),
+                  DropdownMenuItem(
+                    value: 'priceHigh',
+                    child: Text('Price: High to Low'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'priceLow',
+                    child: Text('Price: Low to High'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'stockLow',
+                    child: Text('Stock: Low to High'),
+                  ),
+                ],
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() => _productSort = value);
+                  }
+                },
+              ),
             ),
           ],
         ),
         const SizedBox(height: 12),
-        if (_products.isEmpty)
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text('No products found.', style: textTheme.bodyMedium),
-            ),
+        if (filteredProducts.isEmpty)
+          _EmptyPanel(
+            icon: Icons.inventory_2_outlined,
+            title: 'No matching products',
+            subtitle: 'Try changing search text or sort option.',
           )
         else
-          ..._products.map((item) {
-            final product = item as Map<String, dynamic>;
+          ...filteredProducts.map((product) {
             final price = product['price'] ?? 0;
             final discounted = product['discountedPrice'];
             final isPublished = product['isPublished'] as bool? ?? true;
+            final category = _resolveProductCategoryName(product);
 
-            return Card(
+            return Container(
               margin: const EdgeInsets.only(bottom: 10),
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      product['title']?.toString() ?? '-',
-                      style: textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text('Price: ${currency.format(price)}'),
-                    if (discounted != null)
-                      Text('Discounted: ${currency.format(discounted)}'),
-                    Text('Stock: ${product['stock'] ?? 0}'),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Text('Published'),
-                            const SizedBox(width: 6),
-                            Switch.adaptive(
-                              value: isPublished,
-                              onChanged: (_) => _toggleProductPublish(product),
-                            ),
-                          ],
-                        ),
-                        IconButton(
-                          tooltip: 'Delete',
-                          onPressed: () => _deleteProduct(product),
-                          icon: const Icon(Icons.delete_outline),
-                        ),
-                      ],
-                    ),
-                  ],
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.outlineVariant,
                 ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    product['title']?.toString() ?? '-',
+                    style: textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _InfoBadge(
+                        icon: Icons.sell_outlined,
+                        label: currency.format(price),
+                      ),
+                      if (discounted != null)
+                        _InfoBadge(
+                          icon: Icons.discount_outlined,
+                          label: currency.format(discounted),
+                        ),
+                      _InfoBadge(
+                        icon: Icons.category_outlined,
+                        label: category,
+                      ),
+                      _InfoBadge(
+                        icon: Icons.inventory_outlined,
+                        label: 'Stock ${product['stock'] ?? 0}',
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 8,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('Published'),
+                          const SizedBox(width: 6),
+                          Switch.adaptive(
+                            value: isPublished,
+                            onChanged: (_) => _toggleProductPublish(product),
+                          ),
+                        ],
+                      ),
+                      OutlinedButton.icon(
+                        onPressed: () => _deleteProduct(product),
+                        icon: const Icon(Icons.delete_outline),
+                        label: const Text('Delete'),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             );
           }),
@@ -1055,7 +1464,14 @@ class _StatTile extends StatelessWidget {
 
         return Container(
           decoration: BoxDecoration(
-            color: colorScheme.surface,
+            gradient: LinearGradient(
+              colors: [
+                colorScheme.surface,
+                colorScheme.surfaceContainerHighest.withValues(alpha: 0.42),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
             borderRadius: BorderRadius.circular(14),
             border: Border.all(color: colorScheme.outlineVariant),
           ),
@@ -1064,7 +1480,18 @@ class _StatTile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: colorScheme.primary, size: compact ? 20 : 24),
+              Container(
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  icon,
+                  color: colorScheme.primary,
+                  size: compact ? 18 : 20,
+                ),
+              ),
               SizedBox(height: compact ? 6 : 10),
               Text(
                 label,
@@ -1090,6 +1517,280 @@ class _StatTile extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _DashboardHero extends StatelessWidget {
+  const _DashboardHero({
+    required this.totalUsers,
+    required this.totalOrders,
+    required this.totalRevenue,
+  });
+
+  final int totalUsers;
+  final int totalOrders;
+  final String totalRevenue;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            colorScheme.primary.withValues(alpha: 0.22),
+            colorScheme.primaryContainer.withValues(alpha: 0.24),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: colorScheme.outlineVariant),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: colorScheme.surface.withValues(alpha: 0.66),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  Icons.workspace_premium_outlined,
+                  color: colorScheme.primary,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Store Performance',
+                  style: textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _HeroMetric(label: 'Users', value: '$totalUsers'),
+              _HeroMetric(label: 'Orders', value: '$totalOrders'),
+              _HeroMetric(label: 'Revenue', value: totalRevenue),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HeroMetric extends StatelessWidget {
+  const _HeroMetric({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: colorScheme.surface.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: textTheme.labelMedium?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TabPill extends StatelessWidget {
+  const _TabPill({
+    required this.label,
+    required this.icon,
+    required this.countLabel,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final String countLabel;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(999),
+        child: Ink(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: selected
+                ? colorScheme.primary.withValues(alpha: 0.2)
+                : colorScheme.surface,
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(
+              color: selected
+                  ? colorScheme.primary
+                  : colorScheme.outlineVariant,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 18,
+                color: selected ? colorScheme.primary : colorScheme.onSurface,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: Theme.of(
+                  context,
+                ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: selected
+                      ? colorScheme.primary.withValues(alpha: 0.18)
+                      : colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  countLabel,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w700),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _InfoBadge extends StatelessWidget {
+  const _InfoBadge({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.7),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: colorScheme.onSurfaceVariant),
+          const SizedBox(width: 6),
+          Text(label, style: Theme.of(context).textTheme.labelMedium),
+        ],
+      ),
+    );
+  }
+}
+
+class _EmptyPanel extends StatelessWidget {
+  const _EmptyPanel({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colorScheme.outlineVariant),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: colorScheme.primary, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
