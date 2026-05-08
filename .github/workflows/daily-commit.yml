@@ -36,6 +36,7 @@ jobs:
 
       - name: Commit and push
         run: |
+          git pull
           git add .github/daily-activity.log
           if git diff --cached --quiet; then
             echo "No changes to commit"
