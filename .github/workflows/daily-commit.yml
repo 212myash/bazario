@@ -1,8 +1,5 @@
 name: Daily Commit
 
-permissions:
-  contents: write
-
 on:
   schedule:
     # 8 runs per day (every 3 hours), aligned with 00:00 IST at 18:30 UTC
