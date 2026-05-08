@@ -2,15 +2,15 @@ name: Daily Commit
 
 on:
   schedule:
-    - cron: "30 18 * * *"
-    - cron: "30 21 * * *"
-    - cron: "30 0 * * *"
-    - cron: "30 3 * * *"
-    - cron: "30 6 * * *"
-    - cron: "30 9 * * *"
-    - cron: "30 12 * * *"
-    - cron: "30 15 * * *"
-
+    # 8 runs per day (every 3 hours), aligned with 00:00 IST at 18:30 UTC
+    - cron: "30 18 * * *" # 00:00 IST
+    - cron: "30 21 * * *" # 03:00 IST
+    - cron: "30 0 * * *"  # 06:00 IST
+    - cron: "30 3 * * *"  # 09:00 IST
+    - cron: "30 6 * * *"  # 12:00 IST
+    - cron: "30 9 * * *"  # 15:00 IST
+    - cron: "30 12 * * *" # 18:00 IST
+    - cron: "30 15 * * *" # 21:00 IST
   workflow_dispatch:
 
 permissions:
@@ -36,12 +36,10 @@ jobs:
 
       - name: Commit and push
         run: |
-          git add -f .github/daily-activity.log
-
+          git add .github/daily-activity.log
           if git diff --cached --quiet; then
             echo "No changes to commit"
             exit 0
           fi
-
           git commit -m "chore: daily automated commit"
           git push
