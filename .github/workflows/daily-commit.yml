@@ -1,0 +1,38 @@
+name: Daily Commit
+
+permissions:
+  contents: write
+
+on:
+  on:
+  schedule:
+    - cron: "30 18 * * *"
+    - cron: "30 23 * * *"
+    - cron: "30 4 * * *"
+    - cron: "30 9 * * *"
+    - cron: "30 14 * * *"
+
+  workflow_dispatch:
+
+jobs:
+  auto-commit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure Git
+        run: |
+          git config user.name "Yash Raj"
+          git config user.email "212myashraj@gmail.com"
+
+      - name: Create update file
+        run: |
+          echo "Updated on $(date)" >> activity.txt
+
+      - name: Commit and Push
+        run: |
+          git add activity.txt
+          git commit -m "Daily auto commit" || echo "No changes"
+          git push
