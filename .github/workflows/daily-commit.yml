@@ -5,7 +5,11 @@ permissions:
 
 on:
   schedule:
-    - cron: "* * * * *"
+    - cron: "30 18 * * *"
+    - cron: "30 23 * * *"
+    - cron: "30 4 * * *"
+    - cron: "30 9 * * *"
+    - cron: "30 14 * * *"
 
   workflow_dispatch:
 
@@ -35,5 +39,5 @@ jobs:
       - name: Commit and Push
         run: |
           git add activity.txt
-          git commit -m "Auto commit $(date)" || echo "No changes"
+          git commit -m "Daily auto commit" || echo "No changes"
           git push origin main
