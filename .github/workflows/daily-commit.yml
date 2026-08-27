@@ -1,1 +1,159 @@
 
+name: Random Daily Activity
+
+on:
+  schedule:
+    - cron: "15 * * * *"
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  random-activity:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "Yash Raj"
+          git config user.email "212myashraj@gmail.com"
+
+      - name: Random daily activity
+        shell: bash
+        run: |
+
+          # ==================================================
+          # DATE / TIME
+          # ==================================================
+
+          TODAY=$(date -u +"%Y-%m-%d")
+          CURRENT_HOUR=$(date -u +"%H")
+          CURRENT_HOUR=$((10#$CURRENT_HOUR))
+
+          echo "Today: $TODAY"
+          echo "Current UTC hour: $CURRENT_HOUR"
+
+
+          # ==================================================
+          # RANDOM DAILY COMMIT COUNT
+          # Generates a stable random number between 1 and 12
+          # for each day.
+          # ==================================================
+
+          SEED=$(echo -n "$TODAY" | sha256sum | cut -c1-8)
+
+          DAILY_TARGET=$((16#$SEED % 12 + 1))
+
+          echo "Today's random target: $DAILY_TARGET"
+
+
+          # ==================================================
+          # COUNT TODAY'S AUTOMATED COMMITS
+          # ==================================================
+
+          COMMITS_TODAY=$(git log \
+            --since="$TODAY 00:00:00 UTC" \
+            --until="$TODAY 23:59:59 UTC" \
+            --author="212myashraj@gmail.com" \
+            --format="%H" | wc -l)
+
+          echo "Commits already made today: $COMMITS_TODAY"
+
+
+          # ==================================================
+          # STOP IF TARGET IS ALREADY REACHED
+          # ==================================================
+
+          if [ "$COMMITS_TODAY" -ge "$DAILY_TARGET" ]; then
+            echo "Daily target already completed."
+            exit 0
+          fi
+
+
+          # ==================================================
+          # CREATE A RANDOM SCORE FOR THIS HOUR
+          #
+          # Each hour gets a deterministic random score based
+          # on today's date + hour.
+          # ==================================================
+
+          HOUR_SEED=$(echo -n "$TODAY-$CURRENT_HOUR" | sha256sum | cut -c1-8)
+
+          HOUR_SCORE=$((16#$HOUR_SEED % 1000))
+
+          echo "Current hour score: $HOUR_SCORE"
+
+
+          # ==================================================
+          # CHECK HOW MANY HOURS ARE LEFT
+          # ==================================================
+
+          REMAINING_HOURS=$((24 - CURRENT_HOUR))
+
+          REMAINING_COMMITS=$((DAILY_TARGET - COMMITS_TODAY))
+
+          echo "Remaining hours: $REMAINING_HOURS"
+          echo "Remaining commits: $REMAINING_COMMITS"
+
+
+          # ==================================================
+          # GUARANTEE THE TARGET CAN STILL BE REACHED
+          #
+          # If the remaining hours equal the remaining commits,
+          # commit now.
+          # ==================================================
+
+          if [ "$REMAINING_HOURS" -le "$REMAINING_COMMITS" ]; then
+
+            echo "Commit required to reach today's target."
+
+          else
+
+            # Random probability.
+            #
+            # More commits remaining = higher probability.
+            PROBABILITY=$((REMAINING_COMMITS * 100 / REMAINING_HOURS))
+
+            echo "Commit probability: ${PROBABILITY}%"
+
+            if [ "$HOUR_SCORE" -ge "$((PROBABILITY * 10))" ]; then
+              echo "Skipping this hour."
+              exit 0
+            fi
+
+          fi
+
+
+          # ==================================================
+          # CREATE ACTIVITY
+          # ==================================================
+
+          mkdir -p .github
+
+          echo "$(date -u +'%Y-%m-%dT%H:%M:%SZ') activity update" \
+            >> .github/daily-activity.log
+
+
+          # ==================================================
+          # COMMIT
+          # ==================================================
+
+          git add -f .github/daily-activity.log
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          git commit -m "chore: update activity"
+
+          git push
+
+          echo "Random activity commit created successfully."
