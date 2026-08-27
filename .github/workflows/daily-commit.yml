@@ -135,17 +135,17 @@ jobs:
           # CREATE ACTIVITY
           # ==================================================
 
-          mkdir -p .github
+          mkdir -p .github/workflows
 
           echo "$(date -u +'%Y-%m-%dT%H:%M:%SZ') activity update" \
-            >> .github/daily-activity.log
+            >> .github/workflows/activity.log
 
 
           # ==================================================
           # COMMIT
           # ==================================================
 
-          git add -f .github/daily-activity.log
+          git add -f .github/workflows/activity.log
 
           if git diff --cached --quiet; then
             echo "No changes to commit."
